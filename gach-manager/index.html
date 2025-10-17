@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gạch Manager</title>
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/layout.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/pages.css" />
+</head>
+<body>
+  <!-- Portals -->
+  <div id="modal-root"></div>
+  <div id="toast-root"></div>
+
+  <div class="app">
+    <aside class="sidebar">
+      <div class="logo">🏠 <span>Gạch Manager</span></div>
+      <nav id="gm-menu" class="menu"></nav>
+      <div id="storage-widget" class="storage-widget"></div>
+      <div class="version">v2 Clean Build</div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <h1 id="page-title">Loading...</h1>
+        <div class="actions" id="global-actions"></div>
+      </header>
+      <section id="page-root" class="page-root"></section>
+    </main>
+  </div>
+
+  <!-- Core -->
+  <!-- Firebase (ESM) -->
+  <script type="module" src="src/core/firebase.js"></script>
+  <!-- Sync status indicator -->
+  <script src="src/core/sync-status.js"></script>
+  <!-- Realtime sync (classic script can run after FB globals are set) -->
+  <script src="src/core/realtime-sync.js"></script>
+  <script src="src/core/constants.js"></script>
+  <script src="src/core/utils.js"></script>
+  <script src="src/core/storage.js"></script>
+  <script src="src/core/state.js"></script>
+  <script src="src/core/ui.js"></script>
+  <script src="src/core/router.js"></script>
+
+  <!-- Services -->
+  <script src="src/services/products.service.js"></script>
+  <script src="src/services/receipts.service.js"></script>
+  <script src="src/services/excel.service.js"></script>
+  <script src="src/services/customers.service.js"></script>
+  <script src="src/services/history.service.js"></script>
+  <script src="src/services/stock.service.js"></script>
+  <script src="src/services/trash.service.js"></script>
+
+  <!-- Pages (register routes) -->
+  <script src="src/pages/products.page.js"></script>
+  <script src="src/pages/imports.page.js"></script>
+  <script src="src/pages/exports.page.js"></script>
+  <script src="src/pages/stock.page.js"></script>
+  <script src="src/pages/customers.page.js"></script>
+  <script src="src/pages/history.page.js"></script>
+  <script src="src/pages/trash.page.js"></script>
+  <script src="src/pages/settings.page.js"></script>
+
+  <!-- Bootstrap (start app) -->
+  <script src="src/core/bootstrap.js"></script>
+</body>
+</html>

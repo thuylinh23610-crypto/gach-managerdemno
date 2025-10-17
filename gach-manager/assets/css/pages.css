@@ -1,0 +1,7 @@
+.empty { text-align:center; padding:60px 20px; border:2px dashed #cbd5e1; background:#f1f5f9; border-radius:14px; }
+/* page-head spacing is defined in components.css; avoid overriding here */
+/* .page-head { } */
+/* .page-head h2 { } */
+.search-box { position:relative; }
+.search-box input { padding-left:36px; }
+.search-box .icon { position:absolute; top:50%; left:10px; transform:translateY(-50%); opacity:.6; }

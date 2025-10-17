@@ -1,0 +1,161 @@
+.app { 
+  display: flex; 
+  min-height: 100vh; 
+  background: var(--bg);
+  padding-left: 260px;
+}
+
+/* Ensure main content fills remaining space next to fixed sidebar */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* prevent overflow clipping */
+}
+.sidebar { 
+  width: 260px; 
+  /* Modern horizontal gradient: left strong yellow -> right soft cream */
+  background: linear-gradient(90deg, var(--sidebar-grad-strong) 0%, var(--sidebar-grad-mid) 45%, var(--sidebar-grad-soft) 100%);
+  color: var(--sidebar-ink); 
+  display: flex; 
+  flex-direction: column; 
+  padding: 20px; 
+  box-shadow: var(--shadow);
+  z-index: 100;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  min-height: 100vh;
+  overflow-y: auto;
+  border-right: 1px solid rgba(0,0,0,0.08);
+  background-size: 200% 100%;
+  animation: sidebarHorizontalPan 16s ease-in-out infinite;
+  will-change: background-position, box-shadow;
+}
+.logo { 
+  font-weight: 700; 
+  font-size: 20px; 
+  display: flex; 
+  align-items: center; 
+  gap: 10px; 
+  margin-bottom: 24px; 
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0,0,0,0.12);
+}
+.menu { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 6px; 
+  flex: 1; 
+}
+.menu button { 
+  background: transparent; 
+  border: none; 
+  color: var(--sidebar-ink); 
+  text-align: left; 
+  padding: 12px 16px; 
+  border-radius: 8px; 
+  font-size: 15px; /* revert to original size */
+  display: flex; 
+  gap: 8px; 
+  align-items: center; 
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+/* remove custom emoji size to prevent layout shift */
+.menu button:hover { 
+  background: rgba(255,255,255,0.24); 
+  color: #1f2937; 
+  transform: translateX(4px);
+}
+.menu button.active { 
+  /* Keep brand color for active; fallback to soft blue if --primary missing */
+  background: var(--sidebar-active); 
+  color: #ffffff; 
+  transform: translateX(4px);
+}
+.version { 
+  font-size: 12px; 
+  opacity: 0.8; 
+  text-align: center; 
+  margin-top: 16px; 
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.25);
+  color: #1f2937;
+}
+/* Sidebar storage widget */
+.storage-widget {
+  margin-top: 12px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.24);
+}
+.storage-widget .title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.storage-widget .bar {
+  height: 8px;
+  background: rgba(255,255,255,0.35);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 6px 0 8px;
+}
+.storage-widget .bar > span {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #3b82f6, #06b6d4);
+  transition: width 0.4s ease;
+}
+.storage-widget .text {
+  color: #334155;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+.storage-widget .buy-btn {
+  width: 100%;
+  background: rgba(255,255,255,0.7);
+  color: #1f2937;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.storage-widget .buy-btn:hover {
+  background: rgba(255,255,255,0.9);
+}
+/* Remove unintended structural override that stretched buttons */
+/* (This block was causing buttons to fill sidebar height and change colors) */
+
+/* Remove topbar (headline) globally for a cleaner look */
+.topbar { 
+  display: none !important;
+}
+.page-root { padding: var(--space-6); flex: 1; }
+.table-wrap { 
+  overflow: auto; 
+  background: var(--card-bg); 
+  border-top: 1px solid rgba(0,0,0,0.08);
+  border-radius: var(--radius); 
+  box-shadow: var(--shadow);
+}
+
+/* Animated gradient keyframes for sidebar */
+/* Smooth left-to-right horizontal panning for subtle light movement */
+@keyframes sidebarHorizontalPan {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Respect user preference to reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar { animation: none; background-size: auto; }
+}
