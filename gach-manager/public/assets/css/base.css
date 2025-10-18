@@ -1,0 +1,66 @@
+:root { 
+  /* Fresh, bright, professional palette */
+  --bg: #FFFCF0; /* warm light background: rgb(255,252,240) */
+  --sidebar: #0b3a6f; 
+  --primary: #2563eb; 
+  --danger: #ef4444; 
+  --success: #10b981;
+  --warning: #f59e0b;
+  --radius: 12px; 
+  --border: #e2e8f0; 
+  --text: #0f172a; 
+  --muted: #475569; 
+  --shadow: 0 10px 20px -12px rgba(15, 23, 42, 0.25), 0 4px 8px -6px rgba(15, 23, 42, 0.15);
+  --card-bg: #ffffff;
+  --soft: #f1f5f9;
+  --grad-primary: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  /* Accent (Cream / pastel yellow) */
+  --accent-soft: #FFF7D4;
+  --accent-border: #f4e6b8;
+  /* Sidebar warm palette (harmonizes with #FFFCF0) */
+  --sidebar-warm-1: #ECDCCF; /* very light tan */
+  --sidebar-warm-2: #DCC7B9; /* very light cafe */
+  --sidebar-active: #8B5E34; /* cocoa for active */
+  --sidebar-ink: #2B2B2B; /* dark ink text */
+  /* Sidebar modern gradient palette (left: strong yellow -> right: cream) */
+  --sidebar-grad-strong: #DEDE10; /* deep yellow on the left */
+  --sidebar-grad-mid: var(--accent-soft); /* soft pastel midpoint */
+  --sidebar-grad-soft: #FFFCF0; /* cream on the right, matches background */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; 
+  font-size: 16px;
+}
+* { 
+  box-sizing: border-box; 
+}
+body { 
+  margin: 0; 
+  background: var(--bg); 
+  color: var(--text); 
+  line-height: 1.6;
+  font-size: 15px;
+}
+button { 
+  font-family: inherit; 
+  cursor: pointer; 
+  font-size: 14px; /* Increased button font size */
+  font-weight: 500;
+}
+a { 
+  color: var(--primary); 
+  text-decoration: none; 
+}
+a:hover { text-decoration: underline; }
+
+::selection { background: rgba(37, 99, 235, .18); color: var(--text); }
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  margin-top: 0;
+  color: var(--text);
+}

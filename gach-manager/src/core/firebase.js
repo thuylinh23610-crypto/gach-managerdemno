@@ -20,13 +20,13 @@ import {
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyDVSduVFkpNWcmR5Hm9iD-2W1X6GEPoewA",
-  authDomain: "gach-manager-demo.firebaseapp.com",
-  projectId: "gach-manager-demo",
-  storageBucket: "gach-manager-demo.firebasestorage.app",
-  messagingSenderId: "15007912907",
-  appId: "1:15007912907:web:b68cb101b1f92ded1e5c4e",
-  measurementId: "G-PDDYFH80FH"
+    apiKey: "AIzaSyCvGQKuFlX185r61_y7-kllCkce9RPoPSE",
+    authDomain: "gach-men-manager.firebaseapp.com",
+    projectId: "gach-men-manager",
+    storageBucket: "gach-men-manager.firebasestorage.app",
+    messagingSenderId: "315648440509",
+    appId: "1:315648440509:web:e1ba76c953e54472e0dfd4",
+    measurementId: "G-4VW4N4B5LY"
 };
 
 // Initialize Firebase

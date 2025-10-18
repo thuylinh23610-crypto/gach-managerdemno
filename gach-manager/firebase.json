@@ -3,23 +3,15 @@
     "database": "(default)",
     "location": "asia-east1",
     "rules": "firestore.rules",
-    "indexes": " (firestore.indexes.json)"
+    "indexes": "firestore.indexes.json"
   },
-  "hosting": {
+"hosting": {
+    "site": "gach-men-manager",
     "public": "public",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
     ]
-  },
-  "storage": {
-    "rules": "storage.rules"
   }
 }
