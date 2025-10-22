@@ -9,6 +9,7 @@ import {
   collection,
   addDoc,
   getDocs,
+  getDoc,
   onSnapshot,
   doc,
   setDoc,
@@ -67,6 +68,7 @@ window.FB = {
   collection,
   addDoc,
   getDocs,
+  getDoc,
   onSnapshot,
   doc,
   setDoc,
@@ -74,6 +76,18 @@ window.FB = {
   deleteDoc,
   serverTimestamp
 };
+
+// Provide a GM_fb facade for snapshot-based realtime
+window.GM_fb = window.GM_fb || {};
+Object.assign(window.GM_fb, {
+  app,
+  db,
+  doc,
+  getDoc,
+  setDoc,
+  onSnapshot,
+  serverTimestamp
+});
 
 // Dispatch a ready event so non-module scripts can wait for Firebase
 try {
