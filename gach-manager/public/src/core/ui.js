@@ -23,11 +23,32 @@ window.GM_ui = (function(){
   }
   function closeModal(){ const r=document.getElementById('modal-root'); r.innerHTML=''; document.body.style.overflow=''; }
 
-  function toast(msg,{type='info',timeout=2200}={}){
-    const root=document.getElementById('toast-root');
-    const t=document.createElement('div'); t.className='toast'; t.textContent=msg; root.appendChild(t);
-    setTimeout(()=> t.remove(), timeout);
+  function normalizeType(msg, type){
+    if(type) return type;
+    const m = (msg||'').toString();
+    if(m.startsWith('✅')||/\b(Thành công|Success)\b/i.test(m)) return 'success';
+    if(m.startsWith('❌')||/\b(Lỗi|Error|Thất bại)\b/i.test(m)) return 'error';
+    if(m.startsWith('⚠')||/\b(Cảnh báo|Warning)\b/i.test(m)) return 'warning';
+    return 'info';
   }
+  function toast(msg,{type,timeout=2600}={}){
+    const root=document.getElementById('toast-root');
+    if(!root) return alert(msg);
+    const kind = normalizeType(msg, type);
+    const t=document.createElement('div');
+    t.className='toast '+kind;
+    t.innerHTML = `<div class="toast-inner">${iconFor(kind)}<div class="toast-text">${escapeHtml(msg)}</div></div>`;
+    root.appendChild(t);
+    const timer = setTimeout(()=> removeToast(t), timeout);
+    t.addEventListener('click', ()=>{ clearTimeout(timer); removeToast(t); });
+  }
+  function iconFor(kind){
+    const map={success:'✅', error:'❌', warning:'⚠️', info:'ℹ️'}; return `<span class="toast-icon">${map[kind]||'ℹ️'}</span>`;
+  }
+  function removeToast(t){ try{ t.style.opacity='0'; t.style.transform='translateY(-6px)'; setTimeout(()=> t.remove(), 180);}catch{ t.remove(); } }
+  function escapeHtml(s){ return (s||'').toString().replace(/[&<>]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+  const toastSuccess=(m,o={})=> toast(m,{...o,type:'success'});
+  const toastError=(m,o={})=> toast(m,{...o,type:'error'});
 
   function confirmBox(message){
     return new Promise(res=>{
@@ -37,5 +58,5 @@ window.GM_ui = (function(){
     });
   }
 
-  return { el, clear, modal, closeModal, toast, confirmBox };
+  return { el, clear, modal, closeModal, toast, toastSuccess, toastError, confirmBox };
 })();

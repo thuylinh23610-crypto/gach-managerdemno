@@ -758,21 +758,15 @@
 
       GM_ui.closeModal();
 
-      let resultMessage = `✅ Hoàn thành xử lý file Excel!\n`;
-      resultMessage += `📦 Đã tạo: ${successCount} sản phẩm\n`;
-      if (errorCount > 0) {
-        resultMessage += `❌ Lỗi: ${errorCount} dòng\n\n`;
-        resultMessage += `Chi tiết lỗi:\n${errors.slice(0, 5).join('\n')}`;
-        if (errors.length > 5) {
-          resultMessage += `\n... và ${errors.length - 5} lỗi khác`;
-        }
-      }
-
-      alert(resultMessage);
-
+      // Clear and concise toasts at top-right
       if (successCount > 0) {
-        GM_router.go('products');
+        GM_ui.toast(`✅ Import thành công: ${successCount} sản phẩm`, { type: 'success', timeout: 5000 });
       }
+      if (errorCount > 0) {
+        GM_ui.toast(`❌ Có ${errorCount} dòng lỗi khi import`, { type: 'error', timeout: 6000 });
+      }
+
+      if (successCount > 0) GM_router.go('products');
 
     } catch (error) {
       console.error('Bulk import error:', error);
