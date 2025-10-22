@@ -405,6 +405,7 @@
     try {
       const savedFormData = localStorage.getItem('import_form_data');
       const savedTableData = localStorage.getItem('import_table_data');
+      const restoredThisSession = sessionStorage.getItem('import_restored');
       
       if (savedFormData) {
         const formData = JSON.parse(savedFormData);
@@ -415,7 +416,11 @@
           document.getElementById('transport-unit').value = formData.transportUnit || '';
           document.getElementById('import-date').value = formData.importDate || '';
           
-          // Silent restore: don't toast to avoid spam during input
+          // Toast ONLY once per session
+          if (!restoredThisSession && formData.transportUnit) {
+            GM_ui.toast('📋 Đã khôi phục thông tin form nhập kho');
+            sessionStorage.setItem('import_restored', 'true');
+          }
         }
       }
       
@@ -423,7 +428,11 @@
         const tableData = JSON.parse(savedTableData);
         if (tableData.length > 0) {
           restoreImportTableData(tableData);
-          // Silent restore: don't toast to avoid spam during input
+          // Toast ONLY once per session
+          if (!restoredThisSession && tableData.length > 0) {
+            GM_ui.toast('📦 Đã khôi phục danh sách sản phẩm nhập');
+            sessionStorage.setItem('import_restored', 'true');
+          }
         }
       }
     } catch (error) {

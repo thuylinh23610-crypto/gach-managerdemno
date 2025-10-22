@@ -354,6 +354,7 @@
     try {
       const savedFormData = localStorage.getItem('export_form_data');
       const savedTableData = localStorage.getItem('export_table_data');
+      const restoredThisSession = sessionStorage.getItem('export_restored');
       
       if (savedFormData) {
         const formData = JSON.parse(savedFormData);
@@ -367,7 +368,11 @@
           document.getElementById('export-date').value = formData.exportDate || '';
           document.getElementById('prepaid-amount').value = formData.prepaidAmount || '0';
           
-          // Silent restore: don't toast to avoid spam during input
+          // Toast ONLY once per session after page refresh
+          if (!restoredThisSession && (formData.customerName || formData.customerPhone)) {
+            GM_ui.toast('📋 Đã khôi phục thông tin form đã nhập trước đó');
+            sessionStorage.setItem('export_restored', 'true');
+          }
         }
       }
       
@@ -375,7 +380,11 @@
         const tableData = JSON.parse(savedTableData);
         if (tableData.length > 0) {
           restoreTableData(tableData);
-          // Silent restore: don't toast to avoid spam during input
+          // Toast ONLY once per session
+          if (!restoredThisSession && tableData.length > 0) {
+            GM_ui.toast('📦 Đã khôi phục danh sách sản phẩm đã nhập');
+            sessionStorage.setItem('export_restored', 'true');
+          }
         }
       }
     } catch (error) {

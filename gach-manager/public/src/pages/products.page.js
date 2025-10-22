@@ -999,6 +999,7 @@
     
     try {
       const savedFormData = localStorage.getItem('product_form_data');
+      const restoredThisSession = sessionStorage.getItem('product_restored');
       
       if (savedFormData) {
         const formData = JSON.parse(savedFormData);
@@ -1014,7 +1015,11 @@
           document.getElementById('prod-price').value = formData.price || '';
           document.getElementById('prod-unit').value = formData.unit || '';
           
-          // Silent restore: don't toast to avoid spam during input
+          // Toast ONLY once per session
+          if (!restoredThisSession && (formData.code || formData.size)) {
+            GM_ui.toast('📋 Đã khôi phục thông tin sản phẩm đang nhập');
+            sessionStorage.setItem('product_restored', 'true');
+          }
         }
       }
     } catch (error) {
