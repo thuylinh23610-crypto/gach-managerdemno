@@ -93,7 +93,7 @@
   if (window.firebaseDb && window.FB) {
     attach();
   } else {
-    console.warn('RealtimeSync: Firebase not ready yet, waiting for gm:firebase-ready');
+    // Silently wait for Firebase to be ready
     window.addEventListener('gm:firebase-ready', attach, { once: true });
   }
 })();
