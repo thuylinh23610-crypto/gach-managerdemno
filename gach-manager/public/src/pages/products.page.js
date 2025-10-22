@@ -397,9 +397,11 @@
   // Bulk import products from Excel
   window.openBulkProductImport = function() {
     const modalHTML = `
-      <div style='padding:20px;'>
-        <h3 style='margin-top:0;margin-bottom:20px;color:var(--text);'>📂 Import sản phẩm hàng loạt từ Excel</h3>
-        
+      <div style="display:flex;flex-direction:column;max-height:70vh;overflow:auto;">
+        <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid #e5e7eb;flex-shrink:0;'>
+          <h3 style='margin:0;color:var(--text);font-size:22px;font-weight:700;'>📂 Import sản phẩm hàng loạt từ Excel</h3>
+        </div>
+        <div style='flex:1;overflow-y:auto;padding-right:8px;min-height:0;'>
         <div style='background:#e0f2fe;padding:16px;border-radius:8px;margin-bottom:20px;border-left:4px solid #0ea5e9;'>
           <h4 style='margin:0 0 12px 0;color:#0369a1;display:flex;align-items:center;gap:8px;'>
             📋 Template (9 cột)
@@ -481,11 +483,13 @@
           <label style='display:block;margin-bottom:8px;font-weight:500;color:var(--text);'>📄 Chọn file Excel:</label>
           <input type='file' id='excel-product-input' accept='.xlsx,.xls' 
                  style='display:block;width:100%;padding:12px;border:2px dashed #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;' />
+          <div id='product-import-message' style='display:none;margin-top:10px;padding:10px 14px;background:#f1f5f9;border:1.5px solid #cbd5e1;border-radius:8px;color:#334155;font-size:15px;'></div>
         </div>
         
-        <div style='display:flex;gap:12px;justify-content:flex-end;'>
+        </div>
+        <div style='display:flex;gap:12px;justify-content:flex-end;padding-top:18px;border-top:2px solid #e5e7eb;margin-top:18px;flex-shrink:0;'>
           <button type='button' class='btn ghost' onclick='GM_ui.closeModal()'>❌ Hủy</button>
-          <button type='button' class='btn' onclick='processBulkProductImport()'>📂 Xử lý file</button>
+          <button type='button' class='btn' id='btn-process-bulk-product' onclick='processBulkProductImport()'>📂 Xử lý file</button>
         </div>
       </div>
     `;
@@ -567,15 +571,30 @@
   // Process bulk product import
   window.processBulkProductImport = async function() {
     const fileInput = document.getElementById('excel-product-input');
+    const messageDiv = document.getElementById('product-import-message');
+    const processBtn = document.getElementById('btn-process-bulk-product');
     const file = fileInput?.files[0];
     
     if (!file) {
-      GM_ui.toast('⚠️ Vui lòng chọn file Excel');
+      messageDiv.style.display = 'block';
+      messageDiv.style.background = '#fee2e2';
+      messageDiv.style.borderColor = '#ef4444';
+      messageDiv.style.color = '#991b1b';
+      messageDiv.innerText = '⚠️ Vui lòng chọn file Excel';
       return;
     }
 
     try {
-      GM_ui.toast('🔄 Đang xử lý file Excel...');
+      // Disable button and show processing overlay
+      if (processBtn) { processBtn.disabled = true; processBtn.textContent = '🔄 Đang xử lý...'; }
+      const processingHTML = `
+        <div class="gm-processing-overlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">
+          <div style="background:white;padding:20px;border-radius:8px;text-align:center;min-width:260px;">
+            <div style="margin-bottom:12px;font-size:16px;color:#111827;">🔄 Đang xử lý file Excel...</div>
+            <div class="loading-spinner"></div>
+          </div>
+        </div>`;
+      document.body.insertAdjacentHTML('beforeend', processingHTML);
       const arrayBuffer = await file.arrayBuffer();
 
       // Helper: bytes -> base64
@@ -701,13 +720,20 @@
       }
 
       if (!rows || rows.length === 0) {
-        GM_ui.toast('⚠️ Không tìm thấy dữ liệu trong file Excel');
+        document.querySelector('.gm-processing-overlay')?.remove();
+        messageDiv.style.display = 'block';
+        messageDiv.style.background = '#fff7ed';
+        messageDiv.style.borderColor = '#f59e0b';
+        messageDiv.style.color = '#92400e';
+        messageDiv.innerText = '⚠️ Không tìm thấy dữ liệu trong file Excel';
+        if (processBtn) { processBtn.disabled = false; processBtn.textContent = '📂 Xử lý file'; }
         return;
       }
 
       let successCount = 0;
       let errorCount = 0;
       const errors = [];
+      const results = [];
 
       for (const r of rows) {
         try {
@@ -722,6 +748,7 @@
           if (!code || !size || !material) {
             errors.push(`Dòng ${rowNum}: Thiếu mã sản phẩm, kích thước hoặc chất liệu`);
             errorCount++;
+            results.push({ rowNum, code, size, material, unit, status:'fail', error: 'Thiếu dữ liệu bắt buộc' });
             continue;
           }
 
@@ -729,6 +756,7 @@
           if (existingProduct) {
             errors.push(`Dòng ${rowNum}: Sản phẩm ${code} đã tồn tại`);
             errorCount++;
+            results.push({ rowNum, code, size, material, unit, status:'fail', error: 'Đã tồn tại' });
             continue;
           }
 
@@ -749,28 +777,98 @@
 
           await GM_products.create(productData);
           successCount++;
+          results.push({ rowNum, code, size, material, unit, status:'success' });
         } catch (error) {
           const rn = r && r.rowNum ? r.rowNum : '?';
           errors.push(`Dòng ${rn}: ${error.message}`);
           errorCount++;
+          results.push({ rowNum: rn, code: r?.code || '', size: r?.size || '', material: r?.material || '', unit: r?.unit || 'm²', status:'fail', error: error.message });
         }
       }
+      // Remove processing overlay
+      document.querySelector('.gm-processing-overlay')?.remove();
 
-      GM_ui.closeModal();
+      // Show detailed results inside modal (similar to Nhập kho hàng loạt)
+      const total = results.length;
+      const html = `
+        <div style='display:flex;flex-direction:column;height:100%;'>
+          <div style='background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;padding:16px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;'>
+            <h4 style='margin:0;font-size:16px;'>📊 Kết quả import sản phẩm</h4>
+            <button onclick='GM_ui.closeModal()' class='btn ghost' style='background:rgba(255,255,255,0.2);color:white;border:1px solid rgba(255,255,255,0.3);padding:6px 14px;font-size:14px;font-weight:600;' onmouseover='this.style.background="rgba(255,255,255,0.3)"' onmouseout='this.style.background="rgba(255,255,255,0.2)"'>✖ Đóng</button>
+          </div>
+          <div style='background:#f8fafc;padding:12px;display:flex;gap:16px;border-bottom:2px solid #e5e7eb;'>
+            <div style='flex:1;background:white;padding:12px;border-radius:6px;border-left:4px solid #10b981;'>
+              <div style='font-size:24px;font-weight:bold;color:#10b981;'>${successCount}</div>
+              <div style='font-size:13px;color:#64748b;margin-top:4px;'>✔ Thành công</div>
+            </div>
+            <div style='flex:1;background:white;padding:12px;border-radius:6px;border-left:4px solid #ef4444;'>
+              <div style='font-size:24px;font-weight:bold;color:#ef4444;'>${errorCount}</div>
+              <div style='font-size:13px;color:#64748b;margin-top:4px;'>✖ Thất bại</div>
+            </div>
+            <div style='flex:1;background:white;padding:12px;border-radius:6px;border-left:4px solid #3b82f6;'>
+              <div style='font-size:24px;font-weight:bold;color:#3b82f6;'>${total}</div>
+              <div style='font-size:13px;color:#64748b;margin-top:4px;'>📋 Tổng số</div>
+            </div>
+          </div>
+          <div style='flex:1;overflow-y:auto;background:white;border:1px solid #e5e7eb;border-top:none;'>
+            <table style='width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed;'>
+              <thead style='position:sticky;top:0;background:#f9fafb;z-index:1;'>
+                <tr>
+                  <th style='padding:10px 12px;border-bottom:2px solid #e5e7eb;text-align:center;font-size:13px;color:#64748b;font-weight:600;width:60px;'>STT</th>
+                  <th style='padding:10px 12px;border-bottom:2px solid #e5e7eb;text-align:left;font-size:13px;color:#64748b;font-weight:600;width:20%;'>Mã SP</th>
+                  <th style='padding:10px 12px;border-bottom:2px solid #e5e7eb;text-align:left;font-size:13px;color:#64748b;font-weight:600;width:20%;'>Kích thước</th>
+                  <th style='padding:10px 12px;border-bottom:2px solid #e5e7eb;text-align:left;font-size:13px;color:#64748b;font-weight:600;width:20%;'>Chất liệu</th>
+                  <th style='padding:10px 12px;border-bottom:2px solid #e5e7eb;text-align:center;font-size:13px;color:#64748b;font-weight:600;width:15%;'>Đơn vị</th>
+                  <th style='padding:10px 12px;border-bottom:2px solid #e5e7eb;text-align:center;font-size:13px;color:#64748b;font-weight:600;width:15%;'>Kết quả</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${results.map((r, idx) => {
+                  const bg = idx % 2 === 0 ? 'white' : '#f9fafb';
+                  const statusBadge = r.status === 'success'
+                    ? '<span style="background:#d1fae5;color:#065f46;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;">✔ Thành công</span>'
+                    : `<span style=\"background:#fee2e2;color:#991b1b;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;\" title=\"${(r.error||'').replace(/"/g,'&quot;')}\">✖ Thất bại</span>`;
+                  return `
+                    <tr style='background:${bg};'>
+                      <td style='padding:10px 12px;border-bottom:1px solid #f1f5f9;color:#94a3b8;font-weight:600;text-align:center;'>${idx+1}</td>
+                      <td style='padding:10px 12px;border-bottom:1px solid #f1f5f9;'>${r.code||''}</td>
+                      <td style='padding:10px 12px;border-bottom:1px solid #f1f5f9;'>${r.size||''}</td>
+                      <td style='padding:10px 12px;border-bottom:1px solid #f1f5f9;'>${r.material||''}</td>
+                      <td style='padding:10px 12px;border-bottom:1px solid #f1f5f9;text-align:center;'>${r.unit||''}</td>
+                      <td style='padding:10px 12px;border-bottom:1px solid #f1f5f9;text-align:center;'>${statusBadge}</td>
+                    </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+          <div style='background:#f8fafc;padding:14px 16px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;'>
+            <p style='margin:0;font-size:13px;color:#64748b;'>
+              💡 ${successCount > 0 ? '<strong style="color:#10b981;">Import thành công!</strong> Trang sẽ tự động tải lại...' : '<strong style="color:#ef4444;">Có lỗi xảy ra.</strong> Vui lòng kiểm tra lại dữ liệu.'}
+            </p>
+            <button onclick='GM_ui.closeModal()' class='btn ghost' style='padding:8px 16px;font-size:13px;'>✖ Đóng</button>
+          </div>
+        </div>
+      `;
+      messageDiv.innerHTML = html;
+      messageDiv.style.display = 'block';
 
-      // Clear and concise toasts at top-right
+      // Soft refresh products page if any success
       if (successCount > 0) {
-        GM_ui.toast(`✅ Import thành công: ${successCount} sản phẩm`, { type: 'success', timeout: 5000 });
-      }
-      if (errorCount > 0) {
-        GM_ui.toast(`❌ Có ${errorCount} dòng lỗi khi import`, { type: 'error', timeout: 6000 });
+        setTimeout(()=>{ GM_router.go('products'); }, 1200);
       }
 
-      if (successCount > 0) GM_router.go('products');
+      // Re-enable button text
+      if (processBtn) { processBtn.disabled = false; processBtn.textContent = '📂 Xử lý file'; }
 
     } catch (error) {
       console.error('Bulk import error:', error);
-      GM_ui.toast('❌ Lỗi xử lý file Excel: ' + error.message);
+      document.querySelector('.gm-processing-overlay')?.remove();
+      messageDiv.style.display = 'block';
+      messageDiv.style.background = '#fee2e2';
+      messageDiv.style.borderColor = '#ef4444';
+      messageDiv.style.color = '#991b1b';
+      messageDiv.innerText = '❌ Lỗi xử lý file Excel: ' + error.message;
+      if (processBtn) { processBtn.disabled = false; processBtn.textContent = '📂 Xử lý file'; }
     }
   };
 
