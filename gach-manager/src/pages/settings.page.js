@@ -77,6 +77,11 @@
           GM_state.history = [];
           GM_state.customers = [];
           
+          // ✅ PUSH snapshot rỗng lên Firestore để đồng bộ với các thiết bị khác
+          if (window.GM_realtime?.pushAll) {
+            await window.GM_realtime.pushAll();
+          }
+          
           // Show success modal
           const successModal = document.createElement('div');
           successModal.innerHTML = `
@@ -120,6 +125,12 @@
       GM_state.exports = GM_storage.read(GM_CONST.STORAGE.EXPORTS);
       GM_state.history = GM_storage.read(GM_CONST.STORAGE.HISTORY);
       GM_state.customers = GM_storage.read(GM_CONST.STORAGE.CUSTOMERS);
+      
+      // ✅ PUSH snapshot mới lên Firestore để đồng bộ
+      if (window.GM_realtime?.pushAll) {
+        await window.GM_realtime.pushAll();
+      }
+      
       GM_ui.toast('Nhập dữ liệu thành công');
     } catch(e){ console.error(e); GM_ui.toast('Lỗi nhập'); }
   }
