@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../../../Users/kkhan/Downloads/gach-manager"
+		},
+		{
+			"path": "../.."
+		}
+	],
+	"settings": {
+		"CodeGPT.apiKey": "Anthropic",
+		"liveServer.settings.multiRootWorkspaceName": "gach-manager"
+	}
+}

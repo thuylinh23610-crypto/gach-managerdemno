@@ -32,6 +32,7 @@
             <input id='stock-filter-size' class='input' placeholder='Kích thước...'/>
             <input id='stock-filter-material' class='input' placeholder='Chất liệu...'/>
             <input id='stock-filter-surface' class='input' placeholder='Bề mặt...'/>
+            <input id='stock-filter-type' class='input' placeholder='Loại...'/>
             <input id='stock-filter-unit' class='input' placeholder='Đơn vị...'/>
           </div>
         </div>
@@ -41,7 +42,7 @@
     `;
     
     bindStockEvents();
-    ['stock-filter-code','stock-filter-size','stock-filter-material','stock-filter-surface','stock-filter-unit']
+    ['stock-filter-code','stock-filter-size','stock-filter-material','stock-filter-surface','stock-filter-type','stock-filter-unit']
       .forEach(id=>{ const el=document.getElementById(id); if(el) el.addEventListener('input', GM_utils.debounce(()=>applyStockFilters(stockItems), 200)); });
   }
   
@@ -93,16 +94,21 @@
     
     return `
       <div class='table-wrap' style='margin-top:16px;'>
-        <table class='table'>
+        <table class='table stock-table'>
           <thead>
-            <tr style='background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;'>
+            <tr style='background:#fffaf0;color:#3a2e00;border-bottom:1px solid #f1e5b8;'>
               <th style='padding:16px 12px;font-weight:600;text-align:center;vertical-align:middle;border:none;'>MÃ SẢN PHẨM</th>
               <th style='padding:16px 12px;font-weight:600;text-align:center;vertical-align:middle;border:none;width:150px;'>HÌNH ẢNH</th>
               <th style='padding:16px 12px;font-weight:600;text-align:center;vertical-align:middle;border:none;'>KÍCH THƯỚC</th>
               <th style='padding:16px 12px;font-weight:600;text-align:center;vertical-align:middle;border:none;'>CHẤT LIỆU</th>
               <th style='padding:16px 12px;font-weight:600;text-align:center;vertical-align:middle;border:none;'>BỀ MẶT</th>
+              <th style='padding:16px 12px;font-weight:600;text-align:center;vertical-align:middle;border:none;'>LOẠI</th>
               <th style='padding:16px 12px;font-weight:600;text-align:center;vertical-align:middle;border:none;'>ĐƠN VỊ TÍNH</th>
-              <th style='padding:16px 12px;font-weight:600;text-align:center;vertical-align:middle;border:none;width:140px;'>SỐ LƯỢNG TỒN</th>
+              <th style='padding:16px 12px;font-weight:600;text-align:center;vertical-align:middle;border:none;'>SỐ LƯỢNG</th>
+              <th style='padding:16px 12px;font-weight:600;text-align:center;vertical-align:middle;border:none;'>GIÁ NHẬP</th>
+              <th style='padding:16px 12px;font-weight:600;text-align:center;vertical-align:middle;border:none;'>THÀNH TIỀN NHẬP</th>
+              <th style='padding:16px 12px;font-weight:600;text-align:center;vertical-align:middle;border:none;'>GIÁ BÁN</th>
+              <th style='padding:16px 12px;font-weight:600;text-align:center;vertical-align:middle;border:none;'>THÀNH TIỀN BÁN</th>
             </tr>
           </thead>
           <tbody id='stock-tbody'>
@@ -110,7 +116,12 @@
               const isLowStock = item.stock <= 0;
               const isNegative = item.stock < 0;
               const stockClass = isNegative ? 'negative-stock' : (isLowStock ? 'low-stock' : 'good-stock');
-              const stockIcon = isNegative ? '⚠️' : (isLowStock ? '📉' : '📈');
+              
+              const purchasePrice = parseFloat(item.purchasePrice) || 0;
+              const sellPrice = parseFloat(item.price) || 0;
+              const quantity = parseFloat(item.stock) || 0;
+              const totalPurchase = purchasePrice * quantity;
+              const totalSell = sellPrice * quantity;
               
               return `
                 <tr class='stock-row ${stockClass}' style='transition:all 0.3s ease;${index % 2 === 0 ? 'background:#f8fafc;' : ''}'>
@@ -124,9 +135,22 @@
                   <td style='padding:12px;text-align:center;vertical-align:middle;'>${item.size || '-'}</td>
                   <td style='padding:12px;text-align:center;vertical-align:middle;'>${item.material || '-'}</td>
                   <td style='padding:12px;text-align:center;vertical-align:middle;'>${item.surface || '-'}</td>
+                  <td style='padding:12px;text-align:center;vertical-align:middle;'>${item.type || '-'}</td>
                   <td style='padding:12px;text-align:center;vertical-align:middle;'>${item.unit || '-'}</td>
-                  <td style='padding:12px;text-align:right;font-weight:700;font-size:16px;vertical-align:middle;'>
+                  <td style='padding:12px;text-align:center;font-weight:700;font-size:16px;vertical-align:middle;color:${isNegative ? '#dc2626' : isLowStock ? '#f59e0b' : '#059669'};'>
                     ${formatQty(item.stock)}
+                  </td>
+                  <td style='padding:12px;text-align:right;font-weight:500;vertical-align:middle;'>
+                    ${purchasePrice > 0 ? formatQty(purchasePrice) + ' VNĐ' : '-'}
+                  </td>
+                  <td style='padding:12px;text-align:right;font-weight:600;color:#059669;vertical-align:middle;'>
+                    ${totalPurchase > 0 ? formatQty(totalPurchase) + ' VNĐ' : '-'}
+                  </td>
+                  <td style='padding:12px;text-align:right;font-weight:500;vertical-align:middle;'>
+                    ${sellPrice > 0 ? formatQty(sellPrice) + ' VNĐ' : '-'}
+                  </td>
+                  <td style='padding:12px;text-align:right;font-weight:600;color:#3b82f6;vertical-align:middle;'>
+                    ${totalSell > 0 ? formatQty(totalSell) + ' VNĐ' : '-'}
                   </td>
                 </tr>
               `;
@@ -136,21 +160,26 @@
       </div>
       
       <style>
-        .stock-badge.good-stock {
-          background: linear-gradient(135deg, #10b981, #059669);
-          color: white;
-          box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+        .stock-table {
+          font-size: 14px;
+          border-collapse: collapse;
+          width: 100%;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          border-radius: 12px;
+          overflow: hidden;
         }
-        .stock-badge.low-stock {
-          background: linear-gradient(135deg, #f59e0b, #d97706);
-          color: white;
-          box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+        
+        .stock-table th {
+          position: sticky;
+          top: 0;
+          z-index: 10;
+          font-size: 13px;
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
         }
-        .stock-badge.negative-stock {
-          background: linear-gradient(135deg, #ef4444, #dc2626);
-          color: white;
-          box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
-          animation: pulse 2s infinite;
+        
+        .stock-table td {
+          border-bottom: 1px solid #e5e7eb;
         }
         
         .stock-row:hover {
@@ -159,15 +188,26 @@
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.8; }
+        .stock-row.negative-stock {
+          background: rgba(239, 68, 68, 0.05) !important;
         }
         
-        .table th {
-          position: sticky;
-          top: 0;
-          z-index: 10;
+        .stock-row.low-stock {
+          background: rgba(245, 158, 11, 0.05) !important;
+        }
+        
+        .stock-row.good-stock {
+          background: rgba(16, 185, 129, 0.02) !important;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 1200px) {
+          .stock-table {
+            font-size: 12px;
+          }
+          .stock-table th, .stock-table td {
+            padding: 8px 6px;
+          }
         }
       </style>
     `;
@@ -197,17 +237,19 @@
 
   function applyStockFilters(original){
     const code=(document.getElementById('stock-filter-code')?.value||'').toLowerCase().trim();
-    const size=(document.getElementById('stock-filter-size')?.value||'').toLowerCase().trim();
-    const material=(document.getElementById('stock-filter-material')?.value||'').toLowerCase().trim();
-    const surface=(document.getElementById('stock-filter-surface')?.value||'').toLowerCase().trim();
-    const unit=(document.getElementById('stock-filter-unit')?.value||'').toLowerCase().trim();
+  const size=(document.getElementById('stock-filter-size')?.value||'').toLowerCase().trim();
+  const material=(document.getElementById('stock-filter-material')?.value||'').toLowerCase().trim();
+  const surface=(document.getElementById('stock-filter-surface')?.value||'').toLowerCase().trim();
+  const type=(document.getElementById('stock-filter-type')?.value||'').toLowerCase().trim();
+  const unit=(document.getElementById('stock-filter-unit')?.value||'').toLowerCase().trim();
 
     const list = original.filter(p=>{
       const v=s=> (s||'').toLowerCase();
       if(code && !v(p.code).includes(code)) return false;
       if(size && !v(p.size).includes(size)) return false;
       if(material && !v(p.material).includes(material)) return false;
-      if(surface && !v(p.surface).includes(surface)) return false;
+  if(surface && !v(p.surface).includes(surface)) return false;
+  if(type && !v(p.type).includes(type)) return false;
       if(unit && !v(p.unit).includes(unit)) return false;
       return true;
     });

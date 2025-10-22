@@ -6,11 +6,21 @@
   function renderStockPage(root){
     const stockData = calculateAllStock();
     const products = GM_products.list();
+    // Tính giá nhập/bán gần nhất theo chứng từ
+    const { lastImportPrice, lastExportPrice } = computeLastPrices();
     const stockItems = products.map(product => {
-      const stock = stockData[product.code || product.id] || 0;
+      const key = product.code || product.id;
+      const stock = stockData[key] || 0;
+      // fallback: use product.purchasePrice and product.price when receipts not present
+      const giaNhap = (lastImportPrice.get(key) ?? product.purchasePrice ?? 0) || 0;
+      const giaBan = (lastExportPrice.get(key) ?? product.price ?? 0) || 0;
       return {
         ...product,
-        stock: stock
+        stock,
+        giaNhap,
+        giaBan,
+        thanhTienNhap: (Number(stock)||0) * (Number(giaNhap)||0),
+        thanhTienBan: (Number(stock)||0) * (Number(giaBan)||0)
       };
     });
     
@@ -22,7 +32,10 @@
       <div class='card'>
         <div style='display:flex;justify-content:space-between;align-items:center;gap:12px;'>
           <h3 style='margin:0;font-size:18px;color:var(--text);'>📋 Danh sách tồn kho</h3>
-          <button class='btn' onclick='downloadStockExcel()'>📥 Tải tồn kho</button>
+          <div style='display:flex;gap:8px;flex-wrap:wrap'>
+            <button class='btn' onclick='downloadStockExcel()'>📥 Tải tồn kho</button>
+            <button class='btn' onclick='try{GM_exportAndClear&&GM_exportAndClear()}catch(e){console.error(e);GM_ui.toast("Không tìm thấy chức năng xuất & xóa")}' title='Xuất JSON toàn bộ dữ liệu rồi xóa tất cả'>⬇️ Xuất JSON và XÓA</button>
+          </div>
         </div>
         
         <!-- Filter bar -->
@@ -90,7 +103,14 @@
         </div>
       `;
     }
-    
+    // Totals
+    const totals = stockItems.reduce((acc, it)=>{
+      acc.qty += Number(it.stock)||0;
+      acc.nhap += Number(it.thanhTienNhap)||0;
+      acc.ban += Number(it.thanhTienBan)||0;
+      return acc;
+    }, { qty:0, nhap:0, ban:0 });
+
     return `
       <div class='table-wrap' style='margin-top:16px;'>
         <table class='table'>
@@ -102,7 +122,11 @@
               <th style='padding:16px 12px;font-weight:600;text-align:center;vertical-align:middle;border:none;'>CHẤT LIỆU</th>
               <th style='padding:16px 12px;font-weight:600;text-align:center;vertical-align:middle;border:none;'>BỀ MẶT</th>
               <th style='padding:16px 12px;font-weight:600;text-align:center;vertical-align:middle;border:none;'>ĐƠN VỊ TÍNH</th>
-              <th style='padding:16px 12px;font-weight:600;text-align:center;vertical-align:middle;border:none;width:140px;'>SỐ LƯỢNG TỒN</th>
+              <th style='padding:16px 12px;font-weight:600;text-align:center;vertical-align:middle;border:none;width:120px;'>SỐ LƯỢNG</th>
+              <th style='padding:16px 12px;font-weight:600;text-align:center;vertical-align:middle;border:none;width:120px;'>GIÁ NHẬP</th>
+              <th style='padding:16px 12px;font-weight:600;text-align:center;vertical-align:middle;border:none;width:140px;'>THÀNH TIỀN NHẬP</th>
+              <th style='padding:16px 12px;font-weight:600;text-align:center;vertical-align:middle;border:none;width:120px;'>GIÁ BÁN</th>
+              <th style='padding:16px 12px;font-weight:600;text-align:center;vertical-align:middle;border:none;width:140px;'>THÀNH TIỀN BÁN</th>
             </tr>
           </thead>
           <tbody id='stock-tbody'>
@@ -114,7 +138,9 @@
               
               return `
                 <tr class='stock-row ${stockClass}' style='transition:all 0.3s ease;${index % 2 === 0 ? 'background:#f8fafc;' : ''}'>
-                  <td style='padding:12px;font-weight:600;color:var(--primary);text-align:center;vertical-align:middle;'>${item.code || item.id}</td>
+                  <td style='padding:12px;font-weight:600;text-align:left;vertical-align:middle;'>
+                    <a href="#" onclick="GM_router.navigate('products');return false;" style='color:#2563eb;text-decoration:none;'>${item.code || item.id}</a>
+                  </td>
                   <td style='padding:8px;text-align:center;vertical-align:middle;'>
                     ${item.imageData ? 
                       `<img src='${item.imageData}' style='width:80px;height:60px;object-fit:cover;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);cursor:pointer;' onclick='showStockImageZoom("${item.imageData}")' />` : 
@@ -124,14 +150,28 @@
                   <td style='padding:12px;text-align:center;vertical-align:middle;'>${item.size || '-'}</td>
                   <td style='padding:12px;text-align:center;vertical-align:middle;'>${item.material || '-'}</td>
                   <td style='padding:12px;text-align:center;vertical-align:middle;'>${item.surface || '-'}</td>
-                  <td style='padding:12px;text-align:center;vertical-align:middle;'>${item.unit || '-'}</td>
+                  <td style='padding:12px;text-align:center;vertical-align:middle;'>${formatUnit(item.unit)}</td>
                   <td style='padding:12px;text-align:right;font-weight:700;font-size:16px;vertical-align:middle;'>
                     ${formatQty(item.stock)}
                   </td>
+                  <td style='padding:12px;text-align:right;vertical-align:middle;color:#2563eb;'>${(Number(item.giaNhap)||0).toLocaleString('vi-VN')}</td>
+                  <td style='padding:12px;text-align:right;vertical-align:middle;color:#2563eb;'>${(Number(item.thanhTienNhap)||0).toLocaleString('vi-VN')}</td>
+                  <td style='padding:12px;text-align:right;vertical-align:middle;'>${(Number(item.giaBan)||0).toLocaleString('vi-VN')}</td>
+                  <td style='padding:12px;text-align:right;vertical-align:middle;color:#ef4444;font-weight:600;'>${(Number(item.thanhTienBan)||0).toLocaleString('vi-VN')}</td>
                 </tr>
               `;
             }).join('')}
           </tbody>
+          <tfoot>
+            <tr style='background:#f3f4f6;'>
+              <td colspan='6' style='padding:12px;text-align:right;font-weight:700;'>TỔNG</td>
+              <td style='padding:12px;text-align:right;font-weight:700;'>${formatQty(totals.qty)}</td>
+              <td></td>
+              <td style='padding:12px;text-align:right;font-weight:700;color:#2563eb;'>${totals.nhap.toLocaleString('vi-VN')}</td>
+              <td></td>
+              <td style='padding:12px;text-align:right;font-weight:700;color:#ef4444;'>${totals.ban.toLocaleString('vi-VN')}</td>
+            </tr>
+          </tfoot>
         </table>
       </div>
       
@@ -171,6 +211,54 @@
         }
       </style>
     `;
+  }
+
+  // Tính giá nhập/bán gần nhất dựa trên chứng từ (import/export)
+  function computeLastPrices(){
+    const imports = GM_receipts.list('import') || [];
+    const exports = GM_receipts.list('export') || [];
+    const lastImportPrice = new Map();
+    const lastExportPrice = new Map();
+
+    const trySet = (map, key, price, dateStr) => {
+      const cur = map.get(key);
+      const curDate = cur?.date ? Date.parse(cur.date) : -Infinity;
+      const d = Date.parse(dateStr || '') || 0;
+      if (!cur || d >= curDate) map.set(key, { price: Number(price)||0, date: dateStr||'' });
+    };
+
+    imports.forEach(rec => {
+      const date = rec?.date || '';
+      (rec.items||[]).forEach(it => {
+        const key = findProductKey(it.productId);
+        if (!key) return;
+        trySet(lastImportPrice, key, it.price, date);
+      });
+    });
+
+    exports.forEach(rec => {
+      const date = rec?.date || '';
+      (rec.items||[]).forEach(it => {
+        const key = findProductKey(it.productId);
+        if (!key) return;
+        trySet(lastExportPrice, key, it.price, date);
+      });
+    });
+
+    // Flatten to value maps
+    const mapIn = new Map();
+    lastImportPrice.forEach((v,k)=> mapIn.set(k, v.price));
+    const mapOut = new Map();
+    lastExportPrice.forEach((v,k)=> mapOut.set(k, v.price));
+    return { lastImportPrice: mapIn, lastExportPrice: mapOut };
+  }
+
+  // Tìm key sản phẩm (ưu tiên code) từ productId lưu trong item
+  function findProductKey(productId){
+    if(!productId) return null;
+    const p = (GM_state.products||[]).find(x => x.id === productId || x.code === productId);
+    if(!p) return null;
+    return p.code || p.id;
   }
   
   function bindStockEvents() {
@@ -221,6 +309,14 @@
       // Replace the existing table-wrap
       tableWrap.replaceWith(newTableWrap);
     }
+  }
+
+  // Helper: render unit like 'VNĐ/<unit>' if not already contains currency
+  function formatUnit(unit){
+    const u = (unit||'').trim();
+    if(!u) return '-';
+    const hasVND = /vnd|vnđ|đ/gi.test(u);
+    return hasVND ? u : `VNĐ/${u}`;
   }
 
   // Export stock to Excel with headers: HÌNH ẢNH, MÃ SẢN PHẨM, KÍCH THƯỚC, CHẤT LIỆU, ĐƠN VỊ TÍNH, Số lượng

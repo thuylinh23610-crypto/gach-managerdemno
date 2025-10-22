@@ -21,7 +21,15 @@
             <datalist id='surfaces-list'></datalist>
           <input name='factory' list='factories-list' placeholder='Nhà máy' class='input' autocomplete='off' />
             <datalist id='factories-list'></datalist>
-          <input name='price' type='number' step='1' placeholder='Giá' class='input' />
+          <input name='purchasePrice' type='number' min='0' step='1' placeholder='Giá nhập' class='input' />
+          <input name='price' type='number' min='0' step='1' placeholder='Giá bán' class='input' />
+          <select name='type' class='input' title='Phân loại sản phẩm'>
+            <option value=''>Loại (tùy chọn)</option>
+            <option value='Loại 1'>Loại 1</option>
+            <option value='Loại 2'>Loại 2</option>
+            <option value='Loại 3'>Loại 3</option>
+            <option value='Loại 4'>Loại 4</option>
+          </select>
           <select name='unit' class='input'>
             <option value=''>Chọn đơn vị tính</option>
             <option value='Thùng'>Thùng</option>
@@ -47,7 +55,7 @@
         </form>
       </div>
       <div class='card' style='margin-bottom:12px;'>
-        <div style='display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;align-items:end;'>
+  <div style='display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;align-items:end;'>
           <div>
             <label style='display:block;font-size:12px;color:#64748b;margin-bottom:4px;'>Mã sản phẩm</label>
             <input id='prod-filter-code' class='input' placeholder='Lọc mã...'>
@@ -72,6 +80,10 @@
             <label style='display:block;font-size:12px;color:#64748b;margin-bottom:4px;'>Đơn vị tính</label>
             <input id='prod-filter-unit' class='input' placeholder='Lọc đơn vị...'>
           </div>
+          <div>
+            <label style='display:block;font-size:12px;color:#64748b;margin-bottom:4px;'>Loại</label>
+            <input id='prod-filter-type' class='input' placeholder='Lọc loại...'>
+          </div>
         </div>
       </div>
       <div id='prod-table-wrap'>${ renderTable(items, currentPage) }</div>
@@ -79,7 +91,7 @@
     initSuggestionOptions();
     bindFormEvents();
     // Bind filter events
-    const filterInputs = ['prod-filter-code','prod-filter-size','prod-filter-material','prod-filter-surface','prod-filter-factory','prod-filter-unit'];
+  const filterInputs = ['prod-filter-code','prod-filter-size','prod-filter-material','prod-filter-surface','prod-filter-factory','prod-filter-unit','prod-filter-type'];
     filterInputs.forEach(id=>{
       const el = document.getElementById(id);
       if(el){ el.addEventListener('input', GM_utils.debounce(applyProductFilters, 200)); }
@@ -93,7 +105,8 @@
     const material = (document.getElementById('prod-filter-material')?.value||'').toLowerCase().trim();
     const surface = (document.getElementById('prod-filter-surface')?.value||'').toLowerCase().trim();
     const factory = (document.getElementById('prod-filter-factory')?.value||'').toLowerCase().trim();
-    const unit = (document.getElementById('prod-filter-unit')?.value||'').toLowerCase().trim();
+  const unit = (document.getElementById('prod-filter-unit')?.value||'').toLowerCase().trim();
+  const type = (document.getElementById('prod-filter-type')?.value||'').toLowerCase().trim();
 
     const list = GM_products.list().filter(p=>{
       const v = (s)=> (s||'').toLowerCase();
@@ -103,6 +116,7 @@
       if(surface && !v(p.surface).includes(surface)) return false;
       if(factory && !v(p.factory).includes(factory)) return false;
       if(unit && !v(p.unit).includes(unit)) return false;
+      if(type && !v(p.type).includes(type)) return false;
       return true;
     });
     currentPage = 1;
@@ -125,6 +139,7 @@
       <th style='text-align:center;vertical-align:middle;'>CHẤT LIỆU</th>
       <th style='text-align:center;vertical-align:middle;'>BỀ MẶT</th>
       <th style='text-align:center;vertical-align:middle;'>NHÀ MÁY</th>
+      <th style='text-align:center;vertical-align:middle;'>LOẠI</th>
       <th style='text-align:center;vertical-align:middle;'>ĐƠN VỊ TÍNH</th>
       <th style='width:120px;text-align:center;vertical-align:middle;'>Thao tác</th>
     </tr></thead><tbody>
@@ -139,7 +154,8 @@
         <td style='text-align:center;vertical-align:middle;'>${p.size||''}</td>
         <td style='text-align:center;vertical-align:middle;'>${p.material||''}</td>
         <td style='text-align:center;vertical-align:middle;'>${p.surface||''}</td>
-        <td style='text-align:center;vertical-align:middle;'>${p.factory||''}</td>
+  <td style='text-align:center;vertical-align:middle;'>${p.factory||''}</td>
+  <td style='text-align:center;vertical-align:middle;'>${p.type||''}</td>
         <td style='text-align:center;vertical-align:middle;'>${p.unit||''}</td>
         <td style='text-align:center;vertical-align:middle;'><button class='p-edit btn ghost' style='padding:4px 8px'>Sửa</button> <button class='p-del btn danger' style='padding:4px 8px'>Xóa</button></td>
       </tr>`).join('')}
@@ -185,7 +201,8 @@
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
       const fd = new FormData(form); const obj = Object.fromEntries(fd.entries());
-      obj.price = parseFloat(obj.price)||0;
+  obj.price = parseFloat(obj.price)||0; // Giá bán
+  obj.purchasePrice = parseFloat(obj.purchasePrice)||0; // Giá nhập
       if(preview.dataset.img) obj.imageData = preview.dataset.img; // base64
       
       // Nếu đang edit, luôn yêu cầu validation
@@ -230,7 +247,7 @@
     editingId = id; GM_router.go('products'); // re-render page then populate
     setTimeout(()=>{
       const form = document.getElementById('inline-prod-form'); if(!form) return;
-      form.code.value = p.code||''; form.size.value=p.size||''; form.material.value=p.material||''; form.surface.value=p.surface||''; form.factory.value=p.factory||''; form.price.value=p.price||''; form.unit.value=p.unit||''; form.lotCode.value=p.lotCode||'';
+  form.code.value = p.code||''; form.size.value=p.size||''; form.material.value=p.material||''; form.surface.value=p.surface||''; form.factory.value=p.factory||''; form.type.value=p.type||''; form.purchasePrice.value=p.purchasePrice||''; form.price.value=p.price||''; form.unit.value=p.unit||''; form.lotCode.value=p.lotCode||'';
       const cancelBtn=document.getElementById('btn-cancel-edit'); if(cancelBtn) cancelBtn.style.display='inline-block';
   if(p.imageData){ const preview=document.getElementById('img-preview'); preview.innerHTML=''; preview.style.backgroundSize='contain'; preview.style.backgroundRepeat='no-repeat'; preview.style.backgroundPosition='center'; preview.style.backgroundColor='#fff'; preview.style.backgroundImage=`url(${p.imageData})`; preview.dataset.img=p.imageData; }
       document.getElementById('btn-save-prod').textContent='Cập nhật';
@@ -265,7 +282,21 @@
               <input id='edit-factory' class='input' list='factories-list' value='${p.factory||''}' />
             </div>
             <div>
-              <label style='font-size:12px;color:#64748b;display:block;margin-bottom:6px;'>Giá</label>
+              <label style='font-size:12px;color:#64748b;display:block;margin-bottom:6px;'>Loại</label>
+              <select id='edit-type' class='input'>
+                <option value=''>Loại (tùy chọn)</option>
+                <option value='Loại 1' ${p.type==='Loại 1'?'selected':''}>Loại 1</option>
+                <option value='Loại 2' ${p.type==='Loại 2'?'selected':''}>Loại 2</option>
+                <option value='Loại 3' ${p.type==='Loại 3'?'selected':''}>Loại 3</option>
+                <option value='Loại 4' ${p.type==='Loại 4'?'selected':''}>Loại 4</option>
+              </select>
+            </div>
+            <div>
+              <label style='font-size:12px;color:#64748b;display:block;margin-bottom:6px;'>Giá nhập</label>
+              <input id='edit-purchase' type='number' min='0' step='1' class='input right' value='${Number(p.purchasePrice)||0}' />
+            </div>
+            <div>
+              <label style='font-size:12px;color:#64748b;display:block;margin-bottom:6px;'>Giá bán</label>
               <input id='edit-price' type='number' min='0' step='1' class='input right' value='${Number(p.price)||0}' />
             </div>
             <div>
@@ -322,7 +353,9 @@
         material,
         surface: document.getElementById('edit-surface').value.trim(),
         factory: document.getElementById('edit-factory').value.trim(),
-        price: parseFloat(document.getElementById('edit-price').value)||0,
+  type: document.getElementById('edit-type').value,
+  purchasePrice: parseFloat(document.getElementById('edit-purchase').value)||0,
+  price: parseFloat(document.getElementById('edit-price').value)||0,
         unit: document.getElementById('edit-unit').value,
         lotCode: document.getElementById('edit-lot').value.trim()
       };

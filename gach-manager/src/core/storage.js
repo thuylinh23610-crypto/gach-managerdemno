@@ -77,5 +77,23 @@ window.GM_storage = (function(){
     try { window.dispatchEvent(new Event('gm:storage-changed')); } catch {}
   }
 
-  return { init, read, write, exportAll, importAll };
+  async function clear(){
+    // Clear all data in cache and storage
+    for(const k of KEYS){
+      cache[k] = [];
+      // Clear from localStorage
+      try { localStorage.removeItem(k); } catch(e) { console.warn('[storage] LS clear failed for', k, e); }
+      // Clear from IndexedDB
+      if(db){
+        try {
+          const tx = db.transaction(STORE, 'readwrite');
+          const store = tx.objectStore(STORE);
+          store.delete(k);
+        } catch(e) { console.warn('[storage] IDB clear failed for', k, e); }
+      }
+    }
+    try { window.dispatchEvent(new Event('gm:storage-changed')); } catch {}
+  }
+
+  return { init, read, write, exportAll, importAll, clear };
 })();
