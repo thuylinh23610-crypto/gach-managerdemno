@@ -785,7 +785,7 @@
           importSuccess = await submitImportData(importData);
         }
 
-        // LUÔN LUÔN remove overlay trước
+        // LUÔN LUÔN remove overlay và đóng modal ngay lập tức
         document.querySelector('.gm-processing-overlay')?.remove();
 
         // Đếm kết quả
@@ -794,18 +794,18 @@
 
         console.log('[BulkImport] Import done:', { importSuccess, successCount, failCount, products: products.length });
 
-        // Nếu thành công: đóng modal và thông báo rõ ràng, không giữ bảng kết quả
+        // Clear error message div
+        if (errorMessageDiv) {
+          errorMessageDiv.style.display = 'none';
+          errorMessageDiv.innerHTML = '';
+        }
+
+        // ĐÓNG MODAL NGAY LẬP TỨC (không phụ thuộc điều kiện)
+        GM_ui.closeModal();
+
+        // Nếu thành công: hiện toast và refresh
         if (importSuccess && successCount > 0) {
-          // Clear error message div
-          if (errorMessageDiv) {
-            errorMessageDiv.style.display = 'none';
-            errorMessageDiv.innerHTML = '';
-          }
-          
-          console.log('[BulkImport] Closing modal and showing toast...');
-          
-          // Close modal immediately
-          GM_ui.closeModal();
+          console.log('[BulkImport] Success! Showing toast and refreshing...');
           
           // Show beautiful success toast
           GM_ui.toast(`✅ Nhập kho ${successCount} sản phẩm thành công!`, { type: 'success', timeout: 4000 });
@@ -816,88 +816,21 @@
             console.log('[BulkImport] Refreshing page...');
             GM_router.go('imports');
           }, 300);
-          return;
+        } else {
+          // Thất bại: chỉ hiện toast lỗi, không mở lại modal
+          console.log('[BulkImport] Failed! Showing error toast...');
+          GM_ui.toast('❌ Nhập kho thất bại. Vui lòng kiểm tra lại file Excel.', { type: 'error', timeout: 4000 });
         }
-
-  // Nếu không thành công: hiển thị chi tiết để người dùng xem và sửa
-  let html = `
-          <div style='display:flex;flex-direction:column;height:100%;'>
-            <div style='background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;padding:16px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;'>
-              <h4 style='margin:0;font-size:16px;'>📊 Kết quả import phiếu nhập ${receiptNumber ? `<span style='background:white;color:#667eea;padding:4px 12px;border-radius:16px;font-weight:bold;margin-left:8px;'>${receiptNumber}</span>` : ''}</h4>
-              <button onclick='GM_ui.closeModal()' class='btn ghost' style='background:rgba(255,255,255,0.2);color:white;border:1px solid rgba(255,255,255,0.3);padding:6px 14px;font-size:14px;font-weight:600;' onmouseover='this.style.background="rgba(255,255,255,0.3)"' onmouseout='this.style.background="rgba(255,255,255,0.2)"'>✖ Đóng</button>
-            </div>
-            
-            <div style='background:#f8fafc;padding:12px;display:flex;gap:16px;border-bottom:2px solid #e5e7eb;'>
-              <div style='flex:1;background:white;padding:12px;border-radius:6px;border-left:4px solid #10b981;'>
-                <div style='font-size:24px;font-weight:bold;color:#10b981;'>${successCount}</div>
-                <div style='font-size:13px;color:#64748b;margin-top:4px;'>✔ Thành công</div>
-              </div>
-              <div style='flex:1;background:white;padding:12px;border-radius:6px;border-left:4px solid #ef4444;'>
-                <div style='font-size:24px;font-weight:bold;color:#ef4444;'>${failCount}</div>
-                <div style='font-size:13px;color:#64748b;margin-top:4px;'>✖ Thất bại</div>
-              </div>
-              <div style='flex:1;background:white;padding:12px;border-radius:6px;border-left:4px solid #3b82f6;'>
-                <div style='font-size:24px;font-weight:bold;color:#3b82f6;'>${results.length}</div>
-                <div style='font-size:13px;color:#64748b;margin-top:4px;'>📋 Tổng số</div>
-              </div>
-            </div>
-            
-                        <div style='flex:1;overflow-y:auto;background:white;border:1px solid #e5e7eb;border-top:none;'>
-              <table style='width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed;'>
-                                <thead style='position:sticky;top:0;background:#f9fafb;z-index:1;'>
-                  <tr>
-                    <th style='padding:10px 12px;border-bottom:2px solid #e5e7eb;text-align:center;font-size:13px;color:#64748b;font-weight:600;width:60px;'>STT</th>
-                    <th style='padding:10px 12px;border-bottom:2px solid #e5e7eb;text-align:left;font-size:13px;color:#64748b;font-weight:600;width:25%;'>Mã sản phẩm</th>
-                    <th style='padding:10px 12px;border-bottom:2px solid #e5e7eb;text-align:center;font-size:13px;color:#64748b;font-weight:600;width:15%;'>Số lượng</th>
-                    <th style='padding:10px 12px;border-bottom:2px solid #e5e7eb;text-align:center;font-size:13px;color:#64748b;font-weight:600;width:15%;'>Đơn vị</th>
-                    <th style='padding:10px 12px;border-bottom:2px solid #e5e7eb;text-align:center;font-size:13px;color:#64748b;font-weight:600;width:25%;'>Kết quả</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${results.map((r, idx) => {
-                    const bgColor = idx % 2 === 0 ? 'white' : '#f9fafb';
-                    const statusBadge = r.status === 'success' 
-                      ? '<span style="background:#d1fae5;color:#065f46;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;">✔ Thành công</span>'
-                      : '<span style="background:#fee2e2;color:#991b1b;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;" title="' + (r.error || '') + '">✖ Thất bại</span>';
-                    
-                    return `
-                                            <tr style='background:${bgColor};'>
-                        <td style='padding:10px 12px;border-bottom:1px solid #f1f5f9;color:#94a3b8;font-weight:600;text-align:center;'>${idx + 1}</td>
-                        <td style='padding:10px 12px;border-bottom:1px solid #f1f5f9;'>
-                          <span style='font-weight:600;color:#475569;font-size:14px;'>${r.productCode || ''}</span>
-                        </td>
-                        <td style='padding:10px 12px;border-bottom:1px solid #f1f5f9;text-align:center;font-weight:700;color:#1e293b;font-size:15px;'>${r.quantity || ''}</td>
-                        <td style='padding:10px 12px;border-bottom:1px solid #f1f5f9;text-align:center;'>
-                          <span style='background:#e0e7ff;color:#3730a3;padding:4px 12px;border-radius:6px;font-size:13px;font-weight:600;display:inline-block;'>${r.unit || ''}</span>
-                        </td>
-                        <td style='padding:10px 12px;border-bottom:1px solid #f1f5f9;text-align:center;'>${statusBadge}</td>
-                      </tr>
-                    `;
-                  }).join('')}
-                </tbody>
-              </table>
-            </div>
-            
-                        <div style='background:#f8fafc;padding:14px 16px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;'>
-              <p style='margin:0;font-size:13px;color:#64748b;'>
-                💡 <strong style="color:#ef4444;">Có lỗi xảy ra.</strong> Vui lòng kiểm tra lại dữ liệu.
-              </p>
-              <button onclick='GM_ui.closeModal()' class='btn ghost' style='padding:8px 16px;font-size:13px;'>✖ Đóng</button>
-            </div>
-          </div>
-        `;
-        errorMessageDiv.innerHTML = html;
-        errorMessageDiv.style.display = 'block';
-
-        // Nếu thành công thì reload lại trang nhập kho
-        if (importSuccess) {
-          setTimeout(()=>{ GM_router.go('imports'); }, 1200);
-        }
+        return;
 
       } catch (error) {
+        // Remove overlay nếu có lỗi
         document.querySelector('.gm-processing-overlay')?.remove();
-        errorMessageDiv.textContent = '❌ Lỗi xử lý file Excel: ' + error.message;
-        errorMessageDiv.style.display = 'block';
+        console.error('[BulkImport] Error:', error);
+        
+        // Đóng modal và hiện toast lỗi
+        GM_ui.closeModal();
+        GM_ui.toast('❌ Lỗi xử lý file Excel: ' + error.message, { type: 'error', timeout: 5000 });
       }
   }
 
