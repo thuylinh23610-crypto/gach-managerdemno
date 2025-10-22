@@ -67,6 +67,7 @@ window.FB = {
   collection,
   addDoc,
   getDocs,
+  onSnapshot,
   doc,
   setDoc,
   updateDoc,
