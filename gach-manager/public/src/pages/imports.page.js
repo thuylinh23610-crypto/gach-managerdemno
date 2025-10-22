@@ -762,13 +762,23 @@
           importSuccess = await submitImportData(importData);
         }
 
-        document.querySelector('.loading-spinner')?.parentElement?.parentElement?.remove();
+  document.querySelector('.loading-spinner')?.parentElement?.parentElement?.remove();
 
-                // Hiển thị kết quả chi tiết dưới bảng import
-        const successCount = results.filter(r=>r.status==='success').length;
-        const failCount = results.filter(r=>r.status==='fail').length;
-        
-                let html = `
+  // Đếm kết quả
+  const successCount = results.filter(r=>r.status==='success').length;
+  const failCount = results.filter(r=>r.status==='fail').length;
+
+  // Nếu thành công: đóng modal và thông báo rõ ràng, không giữ bảng kết quả
+  if (importSuccess) {
+    GM_ui.closeModal();
+    GM_ui.toast(`✅ Đã nhập kho hàng loạt: ${successCount} dòng hợp lệ (mã ${receiptNumber})`, { type:'success', timeout: 5000 });
+    if (failCount > 0) GM_ui.toast(`❌ ${failCount} dòng lỗi (bỏ qua)`, { type:'error', timeout: 5000 });
+    setTimeout(()=>{ GM_router.go('imports'); }, 600);
+    return;
+  }
+
+  // Nếu không thành công: hiển thị chi tiết để người dùng xem và sửa
+  let html = `
           <div style='display:flex;flex-direction:column;height:100%;'>
             <div style='background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;padding:16px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;'>
               <h4 style='margin:0;font-size:16px;'>📊 Kết quả import phiếu nhập ${receiptNumber ? `<span style='background:white;color:#667eea;padding:4px 12px;border-radius:16px;font-weight:bold;margin-left:8px;'>${receiptNumber}</span>` : ''}</h4>
@@ -828,7 +838,7 @@
             
                         <div style='background:#f8fafc;padding:14px 16px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;'>
               <p style='margin:0;font-size:13px;color:#64748b;'>
-                💡 ${importSuccess ? '<strong style="color:#10b981;">Phiếu nhập đã được tạo thành công!</strong> Trang sẽ tự động tải lại...' : '<strong style="color:#ef4444;">Có lỗi xảy ra.</strong> Vui lòng kiểm tra lại dữ liệu.'}
+                💡 <strong style="color:#ef4444;">Có lỗi xảy ra.</strong> Vui lòng kiểm tra lại dữ liệu.
               </p>
               <button onclick='GM_ui.closeModal()' class='btn ghost' style='padding:8px 16px;font-size:13px;'>✖ Đóng</button>
             </div>

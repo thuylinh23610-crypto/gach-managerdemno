@@ -589,9 +589,15 @@
       if (processBtn) { processBtn.disabled = true; processBtn.textContent = '🔄 Đang xử lý...'; }
       const processingHTML = `
         <div class="gm-processing-overlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">
-          <div style="background:white;padding:20px;border-radius:8px;text-align:center;min-width:260px;">
+          <div style="background:white;padding:20px;border-radius:8px;text-align:center;min-width:320px;">
             <div style="margin-bottom:12px;font-size:16px;color:#111827;">🔄 Đang xử lý file Excel...</div>
             <div class="loading-spinner"></div>
+            <div style="margin-top:12px;width:100%;">
+              <div style="height:8px;background:#e5e7eb;border-radius:9999px;overflow:hidden;">
+                <div id="gm-progress-bar" style="width:0%;height:8px;background:#3b82f6;transition:width .15s;"></div>
+              </div>
+              <div id="gm-progress-text" style="margin-top:8px;font-size:12px;color:#6b7280;">0/0</div>
+            </div>
           </div>
         </div>`;
       document.body.insertAdjacentHTML('beforeend', processingHTML);
@@ -734,8 +740,13 @@
       let errorCount = 0;
       const errors = [];
       const results = [];
+      const total = rows.length;
+      const bar = document.getElementById('gm-progress-bar');
+      const txt = document.getElementById('gm-progress-text');
+      if (txt) txt.textContent = `0/${total}`;
 
-      for (const r of rows) {
+      for (let i = 0; i < rows.length; i++) {
+        const r = rows[i];
         try {
           const { rowNum, code, size, material } = r;
           const unit = r.unit || 'm²';
@@ -784,12 +795,24 @@
           errorCount++;
           results.push({ rowNum: rn, code: r?.code || '', size: r?.size || '', material: r?.material || '', unit: r?.unit || 'm²', status:'fail', error: error.message });
         }
+        const processed = i + 1;
+        if (bar) bar.style.width = `${Math.round(processed/total*100)}%`;
+        if (txt) txt.textContent = `${processed}/${total}`;
       }
-      // Remove processing overlay
+      // Remove processing overlay before showing toasts/results
       document.querySelector('.gm-processing-overlay')?.remove();
 
-      // Show detailed results inside modal (similar to Nhập kho hàng loạt)
-      const total = results.length;
+      // Nếu có thành công: đóng modal, thông báo và refresh
+      if (successCount > 0) {
+        GM_ui.closeModal();
+        GM_ui.toast(`✅ Import sản phẩm thành công: ${successCount} dòng`, { type: 'success', timeout: 5000 });
+        if (errorCount > 0) GM_ui.toast(`❌ Có ${errorCount} dòng lỗi (bỏ qua)`, { type: 'error', timeout: 6000 });
+        GM_router.go('products');
+        return;
+      }
+
+      // Nếu không có dòng thành công: hiển thị chi tiết lỗi trong modal để xem
+      const totalCount = results.length;
       const html = `
         <div style='display:flex;flex-direction:column;height:100%;'>
           <div style='background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;padding:16px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;'>
@@ -806,7 +829,7 @@
               <div style='font-size:13px;color:#64748b;margin-top:4px;'>✖ Thất bại</div>
             </div>
             <div style='flex:1;background:white;padding:12px;border-radius:6px;border-left:4px solid #3b82f6;'>
-              <div style='font-size:24px;font-weight:bold;color:#3b82f6;'>${total}</div>
+              <div style='font-size:24px;font-weight:bold;color:#3b82f6;'>${totalCount}</div>
               <div style='font-size:13px;color:#64748b;margin-top:4px;'>📋 Tổng số</div>
             </div>
           </div>
@@ -852,12 +875,7 @@
       messageDiv.innerHTML = html;
       messageDiv.style.display = 'block';
 
-      // Soft refresh products page if any success
-      if (successCount > 0) {
-        setTimeout(()=>{ GM_router.go('products'); }, 1200);
-      }
-
-      // Re-enable button text
+      // Re-enable button text (staying on modal due to all errors)
       if (processBtn) { processBtn.disabled = false; processBtn.textContent = '📂 Xử lý file'; }
 
     } catch (error) {

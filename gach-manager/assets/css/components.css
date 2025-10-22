@@ -190,7 +190,7 @@
   position: fixed;
   top: 16px;
   right: 16px;
-  z-index: 2000;
+  z-index: 12000; /* above any modal/processing overlay */
   display: flex;
   flex-direction: column;
   gap: 10px;
