@@ -265,7 +265,8 @@
     }
   }
 
-  // Export stock to Excel with headers: HÌNH ẢNH, MÃ SẢN PHẨM, KÍCH THƯỚC, CHẤT LIỆU, ĐƠN VỊ TÍNH, Số lượng
+  // Export stock to Excel with headers mirroring stock table (exclude price columns):
+  // MÃ SẢN PHẨM, HÌNH ẢNH, KÍCH THƯỚC, CHẤT LIỆU, BỀ MẶT, LOẠI, ĐƠN VỊ TÍNH, Số lượng
   window.downloadStockExcel = async function() {
     try {
       // Load ExcelJS dynamically if needed
@@ -283,29 +284,33 @@
       const wb = new ExcelJS.Workbook();
       const ws = wb.addWorksheet('Ton_kho');
 
-      // Headers
-      const headers = ['HÌNH ẢNH','MÃ SẢN PHẨM','KÍCH THƯỚC','CHẤT LIỆU','ĐƠN VỊ TÍNH','Số lượng'];
+      // Headers (order aligned to request)
+      const headers = ['MÃ SẢN PHẨM','HÌNH ẢNH','KÍCH THƯỚC','CHẤT LIỆU','BỀ MẶT','LOẠI','ĐƠN VỊ TÍNH','Số lượng'];
       ws.addRow(headers);
       ws.getRow(1).font = { bold: true };
       ws.columns = [
-        { width: 18 }, // image col
-        { width: 18 },
-        { width: 14 },
-        { width: 14 },
-        { width: 16 },
-        { width: 12 }
+        { width: 18 }, // Mã sản phẩm
+        { width: 18 }, // Hình ảnh
+        { width: 14 }, // Kích thước
+        { width: 14 }, // Chất liệu
+        { width: 14 }, // Bề mặt
+        { width: 12 }, // Loại
+        { width: 14 }, // Đơn vị tính
+        { width: 12 }  // Số lượng
       ];
 
       // Add data rows and images
       for (let i = 0; i < products.length; i++) {
         const p = products[i];
         const rowIndex = i + 2; // row 1 is header
-        const code = p.code || p.id || '';
-        const size = p.size || '';
-        const material = p.material || '';
-        const unit = p.unit || '';
-        const qty = stockData[code] ?? 0;
-        ws.addRow(['', code, size, material, unit, qty]);
+  const code = p.code || p.id || '';
+  const size = p.size || '';
+  const material = p.material || '';
+  const surface = p.surface || '';
+  const type = p.type || '';
+  const unit = p.unit || '';
+  const qty = stockData[code] ?? 0;
+  ws.addRow([code, '', size, material, surface, type, unit, qty]);
         ws.getRow(rowIndex).height = 60; // make room for image
 
         if (p.imageData) {
@@ -318,9 +323,9 @@
               if (m) { base64 = m[2]; const mime = m[1]; if (mime.includes('jpeg')||mime.includes('jpg')) ext='jpeg'; if (mime.includes('png')) ext='png'; }
             }
             const imgId = wb.addImage({ base64: base64, extension: ext });
-            // Place image at column A, this row
+            // Place image at column B (index 1), this row
             ws.addImage(imgId, {
-              tl: { col: 0, row: rowIndex-1 }, // zero-based indices
+              tl: { col: 1, row: rowIndex-1 },
               ext: { width: 80, height: 50 }
             });
           } catch(e) { console.warn('Embed image failed for', code, e); }

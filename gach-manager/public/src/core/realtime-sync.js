@@ -51,6 +51,7 @@
         GM_storage.importAll(data.data || {});
         console.log('[RealtimeSync] Pull version', ver);
       } finally { importing = false; }
+      try { window.dispatchEvent(new CustomEvent('gm:data-updated', { detail: { source: 'cloud', version: ver } })); } catch {}
     }, err=> console.error('[RealtimeSync] onSnapshot error', err));
 
     // Wrap write -> debounce push

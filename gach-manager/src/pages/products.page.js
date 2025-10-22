@@ -402,7 +402,7 @@
         
         <div style='background:#e0f2fe;padding:16px;border-radius:8px;margin-bottom:20px;border-left:4px solid #0ea5e9;'>
           <h4 style='margin:0 0 12px 0;color:#0369a1;display:flex;align-items:center;gap:8px;'>
-            📋 Template mới (5 cột)
+            📋 Template (9 cột)
             <button class='btn ghost' onclick='downloadProductTemplate()' style='padding:4px 12px;font-size:12px;margin-left:auto;'>📥 Tải template</button>
           </h4>
           <div style='background:white;padding:12px;border-radius:6px;border:1px solid #bae6fd;'>
@@ -414,46 +414,66 @@
                   <th style='border:1px solid #0ea5e9;padding:8px;text-align:center;color:#0369a1;font-weight:600;'>C</th>
                   <th style='border:1px solid #0ea5e9;padding:8px;text-align:center;color:#0369a1;font-weight:600;'>D</th>
                   <th style='border:1px solid #0ea5e9;padding:8px;text-align:center;color:#0369a1;font-weight:600;'>E</th>
+                  <th style='border:1px solid #0ea5e9;padding:8px;text-align:center;color:#0369a1;font-weight:600;'>F</th>
+                  <th style='border:1px solid #0ea5e9;padding:8px;text-align:center;color:#0369a1;font-weight:600;'>G</th>
+                  <th style='border:1px solid #0ea5e9;padding:8px;text-align:center;color:#0369a1;font-weight:600;'>H</th>
+                  <th style='border:1px solid #0ea5e9;padding:8px;text-align:center;color:#0369a1;font-weight:600;'>I</th>
                 </tr>
               </thead>
               <tbody>
                 <tr style='background:#fefefe;'>
-                  <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;font-weight:500;'>HÌNH ẢNH</td>
                   <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;font-weight:500;'>MÃ SẢN PHẨM</td>
+                  <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;font-weight:500;'>HÌNH ẢNH</td>
                   <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;font-weight:500;'>KÍCH THƯỚC</td>
                   <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;font-weight:500;'>CHẤT LIỆU</td>
+                  <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;font-weight:500;'>BỀ MẶT</td>
+                  <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;font-weight:500;'>LOẠI</td>
                   <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;font-weight:500;'>ĐƠN VỊ TÍNH</td>
+                  <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;font-weight:500;'>GIÁ NHẬP</td>
+                  <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;font-weight:500;'>GIÁ BÁN</td>
                 </tr>
                 <tr style='color:#64748b;font-style:italic;'>
-                  <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;'>URL ảnh (tùy chọn)</td>
                   <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;'>SP001</td>
+                  <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;'>URL ảnh (tùy chọn)</td>
                   <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;'>60x60</td>
                   <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;'>Men</td>
+                  <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;'>Bóng</td>
+                  <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;'>Loại 1</td>
                   <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;'>m²</td>
+                  <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;'>120000</td>
+                  <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;'>180000</td>
                 </tr>
                 <tr style='color:#64748b;font-style:italic;'>
-                  <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;'></td>
                   <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;'>SP002</td>
+                  <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;'></td>
                   <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;'>80x80</td>
                   <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;'>Granite</td>
+                  <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;'></td>
+                  <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;'></td>
                   <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;'>m²</td>
+                  <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;'></td>
+                  <td style='border:1px solid #e0e7ff;padding:8px;text-align:center;'></td>
                 </tr>
               </tbody>
             </table>
           </div>
           <p style='margin:12px 0 0 0;font-size:13px;color:#0369a1;'>
-            <strong>✨ Bắt buộc:</strong> Mã SP, Kích thước, Chất liệu, Đơn vị tính | <strong>Tùy chọn:</strong> Hình ảnh (URL hoặc ảnh nhúng trong file Excel)
+            <strong>✨ Bắt buộc:</strong> Mã SP, Kích thước, Chất liệu | <strong>Tùy chọn:</strong> Hình ảnh (URL hoặc nhúng), Bề mặt, Loại, Đơn vị tính, Giá nhập, Giá bán
           </p>
         </div>
         
         <div style='background:#fef3cd;border:1px solid #f59e0b;border-radius:6px;padding:12px;margin-bottom:20px;'>
           <h4 style='margin:0 0 8px 0;color:#92400e;'>📋 Cột trong file Excel:</h4>
           <ul style='margin:0;padding-left:20px;color:#78716c;font-size:14px;'>
-            <li>Cột A: <strong>Hình ảnh</strong> (tùy chọn - URL ảnh hoặc ảnh dán trực tiếp trong Excel)</li>
-            <li>Cột B: <strong>Mã sản phẩm</strong> (bắt buộc)</li>
+            <li>Cột A: <strong>Mã sản phẩm</strong> (bắt buộc)</li>
+            <li>Cột B: <strong>Hình ảnh</strong> (tùy chọn - URL ảnh hoặc ảnh dán trực tiếp trong Excel)</li>
             <li>Cột C: <strong>Kích thước</strong> (bắt buộc)</li>
             <li>Cột D: <strong>Chất liệu</strong> (bắt buộc)</li>
-            <li>Cột E: <strong>Đơn vị tính</strong> (bắt buộc, ví dụ: m², Thùng, Viên)</li>
+            <li>Cột E: <strong>Bề mặt</strong> (tùy chọn)</li>
+            <li>Cột F: <strong>Loại</strong> (tùy chọn)</li>
+            <li>Cột G: <strong>Đơn vị tính</strong> (tùy chọn, mặc định m²)</li>
+            <li>Cột H: <strong>Giá nhập</strong> (tùy chọn)</li>
+            <li>Cột I: <strong>Giá bán</strong> (tùy chọn)</li>
           </ul>
         </div>
         
@@ -478,10 +498,10 @@
     try {
       // Create simple template data
       const templateData = [
-        ['HÌNH ẢNH','MÃ SẢN PHẨM','KÍCH THƯỚC','CHẤT LIỆU','ĐƠN VỊ TÍNH'],
-        ['URL ảnh (tùy chọn)','SP001','60x60','Men','m²'],
-        ['','SP002','80x80','Granite','m²'],
-        ['','SP003','30x60','Ceramic','m²']
+        ['MÃ SẢN PHẨM','HÌNH ẢNH','KÍCH THƯỚC','CHẤT LIỆU','BỀ MẶT','LOẠI','ĐƠN VỊ TÍNH','GIÁ NHẬP','GIÁ BÁN'],
+        ['SP001','URL ảnh (tùy chọn)','60x60','Men','Bóng','Loại 1','m²','120000','180000'],
+        ['SP002','','80x80','Granite','','','m²','',''],
+        ['SP003','','30x60','Ceramic','','','m²','','']
       ];
       
       // Load SheetJS if not available
@@ -513,11 +533,15 @@
     
     // Set column widths
     ws['!cols'] = [
-      { wch: 30 }, // Hình ảnh URL
       { wch: 18 }, // Mã sản phẩm
+      { wch: 30 }, // Hình ảnh URL
       { wch: 12 }, // Kích thước
       { wch: 12 }, // Chất liệu
-      { wch: 14 }  // Đơn vị tính
+      { wch: 12 }, // Bề mặt
+      { wch: 12 }, // Loại
+      { wch: 14 }, // Đơn vị tính
+      { wch: 12 }, // Giá nhập
+      { wch: 12 }  // Giá bán
     ];
     
     // Style header row
@@ -566,7 +590,7 @@
       }
 
       // Try Method B: use ExcelJS to read cells and embedded images
-      async function parseWithExcelJS(ab) {
+  async function parseWithExcelJS(ab) {
         // Load ExcelJS dynamically if needed
         if (typeof ExcelJS === 'undefined') {
           await new Promise((resolve) => {
@@ -613,11 +637,15 @@
         const startRow = headerRow + 1;
         const lastRow = ws.rowCount || 10000;
         for (let r = startRow; r <= lastRow; r++) {
-          const code = (ws.getCell(r, 2).text || '').trim();
+          const code = (ws.getCell(r, 1).text || '').trim();
           const size = (ws.getCell(r, 3).text || '').trim();
           const material = (ws.getCell(r, 4).text || '').trim();
-          const unit = (ws.getCell(r, 5).text || '').trim() || 'm²';
-          const maybeUrl = (ws.getCell(r, 1).text || '').trim();
+          const surface = (ws.getCell(r, 5).text || '').trim();
+          const type = (ws.getCell(r, 6).text || '').trim();
+          const unit = (ws.getCell(r, 7).text || '').trim() || 'm²';
+          const purchasePrice = parseFloat(ws.getCell(r, 8).value) || 0;
+          const price = parseFloat(ws.getCell(r, 9).value) || 0;
+          const maybeUrl = (ws.getCell(r, 2).text || '').trim();
 
           // Stop if the entire row is empty (heuristic)
           if (!code && !size && !material && !unit && !maybeUrl) {
@@ -627,7 +655,7 @@
 
           results.push({
             rowNum: r,
-            code, size, material, unit,
+            code, size, material, surface, type, unit, purchasePrice, price,
             imageData: imageByRow.get(r) || null,
             imageUrlText: maybeUrl
           });
@@ -636,7 +664,7 @@
       }
 
       // Fallback using SheetJS (no embedded image support) if ExcelJS fails
-      async function parseWithSheetJS(ab) {
+  async function parseWithSheetJS(ab) {
         if (typeof XLSX === 'undefined') {
           const script = document.createElement('script');
           script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
@@ -650,12 +678,16 @@
         const rows = jsonData.slice(1).filter(row => row.length > 0);
         const results = rows.map((row, idx) => ({
           rowNum: idx + 2,
-          code: (row[1] ?? '').toString().trim(),
+          code: (row[0] ?? '').toString().trim(),
           size: (row[2] ?? '').toString().trim(),
           material: (row[3] ?? '').toString().trim(),
-          unit: ((row[4] ?? 'm²').toString().trim() || 'm²'),
+          surface: (row[4] ?? '').toString().trim(),
+          type: (row[5] ?? '').toString().trim(),
+          unit: ((row[6] ?? 'm²').toString().trim() || 'm²'),
+          purchasePrice: parseFloat(row[7]) || 0,
+          price: parseFloat(row[8]) || 0,
           imageData: null,
-          imageUrlText: ((row[0] ?? '').toString().trim())
+          imageUrlText: ((row[1] ?? '').toString().trim())
         }));
         return results;
       }
@@ -681,8 +713,10 @@
         try {
           const { rowNum, code, size, material } = r;
           const unit = r.unit || 'm²';
-          const surface = '';
-          const price = 0;
+          const surface = r.surface || '';
+          const type = r.type || '';
+          const purchasePrice = r.purchasePrice || 0;
+          const price = r.price || 0;
           const factory = '';
 
           if (!code || !size || !material) {
@@ -698,7 +732,7 @@
             continue;
           }
 
-          const productData = { code, size, material, surface, price, factory, unit };
+          const productData = { code, size, material, surface, type, purchasePrice, price, factory, unit };
 
           if (r.imageData) {
             productData.imageData = r.imageData;
