@@ -34,16 +34,16 @@
   <!-- Core -->
   <!-- Firebase (ESM) -->
   <script type="module" src="src/core/firebase.js"></script>
-  <!-- Sync status indicator -->
-  <script src="src/core/sync-status.js"></script>
-  <!-- Realtime sync (classic script can run after FB globals are set) -->
-  <script src="src/core/realtime-sync.js"></script>
+  <!-- Core dependencies (must be before realtime) -->
   <script src="src/core/constants.js"></script>
   <script src="src/core/utils.js"></script>
   <script src="src/core/storage.js"></script>
   <script src="src/core/state.js"></script>
   <script src="src/core/ui.js"></script>
   <script src="src/core/router.js"></script>
+  <!-- Status + Realtime AFTER state/storage are ready -->
+  <script src="src/core/sync-status.js"></script>
+  <script src="src/core/realtime-sync.js"></script>
 
   <!-- Services -->
   <script src="src/services/products.service.js"></script>
