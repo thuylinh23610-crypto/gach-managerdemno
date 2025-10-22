@@ -367,9 +367,7 @@
           document.getElementById('export-date').value = formData.exportDate || '';
           document.getElementById('prepaid-amount').value = formData.prepaidAmount || '0';
           
-          if (formData.customerName || formData.customerPhone) {
-            GM_ui.toast('📋 Đã khôi phục thông tin form đã nhập trước đó');
-          }
+          // Silent restore: don't toast to avoid spam during input
         }
       }
       
@@ -377,7 +375,7 @@
         const tableData = JSON.parse(savedTableData);
         if (tableData.length > 0) {
           restoreTableData(tableData);
-          GM_ui.toast('📦 Đã khôi phục danh sách sản phẩm đã nhập');
+          // Silent restore: don't toast to avoid spam during input
         }
       }
     } catch (error) {

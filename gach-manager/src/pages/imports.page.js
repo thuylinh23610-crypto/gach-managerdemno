@@ -415,9 +415,7 @@
           document.getElementById('transport-unit').value = formData.transportUnit || '';
           document.getElementById('import-date').value = formData.importDate || '';
           
-          if (formData.transportUnit) {
-            GM_ui.toast('📋 Đã khôi phục thông tin form nhập kho');
-          }
+          // Silent restore: don't toast to avoid spam during input
         }
       }
       
@@ -425,7 +423,7 @@
         const tableData = JSON.parse(savedTableData);
         if (tableData.length > 0) {
           restoreImportTableData(tableData);
-          GM_ui.toast('📦 Đã khôi phục danh sách sản phẩm nhập');
+          // Silent restore: don't toast to avoid spam during input
         }
       }
     } catch (error) {

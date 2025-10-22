@@ -1014,9 +1014,7 @@
           document.getElementById('prod-price').value = formData.price || '';
           document.getElementById('prod-unit').value = formData.unit || '';
           
-          if (formData.code || formData.size) {
-            GM_ui.toast('📋 Đã khôi phục thông tin sản phẩm đang nhập');
-          }
+          // Silent restore: don't toast to avoid spam during input
         }
       }
     } catch (error) {
