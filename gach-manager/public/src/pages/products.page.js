@@ -795,6 +795,7 @@
           errorCount++;
           results.push({ rowNum: rn, code: r?.code || '', size: r?.size || '', material: r?.material || '', unit: r?.unit || 'm²', status:'fail', error: error.message });
         }
+        // update progress
         const processed = i + 1;
         if (bar) bar.style.width = `${Math.round(processed/total*100)}%`;
         if (txt) txt.textContent = `${processed}/${total}`;
@@ -820,7 +821,7 @@
       }
 
       // Nếu không có dòng thành công: hiển thị chi tiết lỗi trong modal để xem
-      const totalCount = results.length;
+  const totalCount = results.length;
       const html = `
         <div style='display:flex;flex-direction:column;height:100%;'>
           <div style='background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;padding:16px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;'>
@@ -858,7 +859,7 @@
                   const bg = idx % 2 === 0 ? 'white' : '#f9fafb';
                   const statusBadge = r.status === 'success'
                     ? '<span style="background:#d1fae5;color:#065f46;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;">✔ Thành công</span>'
-                    : `<span style=\"background:#fee2e2;color:#991b1b;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;\" title=\"${(r.error||'').replace(/"/g,'&quot;')}\">✖ Thất bại</span>`;
+                    : `<span style="background:#fee2e2;color:#991b1b;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;" title="${(r.error||'')}">✖ Thất bại</span>`;
                   return `
                     <tr style='background:${bg};'>
                       <td style='padding:10px 12px;border-bottom:1px solid #f1f5f9;color:#94a3b8;font-weight:600;text-align:center;'>${idx+1}</td>

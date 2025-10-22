@@ -2,7 +2,7 @@ window.GM_receipts = (function(){
   const S=GM_CONST.STORAGE;
   function generateCode(prefix, existing){ let max=0; existing.forEach(r=>{ const m=new RegExp('^'+prefix+'(\n?)(\\d+)$').exec(r.receiptCode); if(m){ const num=parseInt(m[2]||m[1]||'',10); if(num>max) max=num; }}); return prefix+String(max+1).padStart(3,'0'); }
   function list(type){ if(!type) return [...GM_state.imports, ...GM_state.exports]; if(type==='import') return GM_state.imports; return GM_state.exports; }
-  async function createImport({items, partnerName, note}){ const code = genCode('PN', GM_state.imports); const date=GM_utils.nowISO(); const total = GM_utils.sum(items, i=> i.quantity * i.price); const rec={ id:GM_utils.uid(), receiptCode:code, type:'import', items, partnerName, note, date, totalAmount: total }; GM_state.imports.push(rec); addHistoryForReceipt(rec); await persist(); try { await cloudUpsertImport(rec); } catch(_) {} window.GM_realtime?.pushAll(); return rec; }
+  async function createImport({items, partnerName, note}){ const code = genCode('PN', GM_state.imports); const date=GM_utils.nowISO(); const total = GM_utils.sum(items, i=> i.quantity * i.price); const rec={ id:GM_utils.uid(), receiptCode:code, type:'import', items, partnerName, note, date, totalAmount: total }; GM_state.imports.push(rec); addHistoryForReceipt(rec); await persist(); try { await cloudUpsertImport(rec); } catch(_) {} try { await window.GM_realtime?.pushAll(); } catch(e) { console.error('[receipts] pushAll failed:', e); } return rec; }
   async function createExport(data){
     const { items=[], partnerName, partnerType, partnerPhone, partnerAddress, prepaidAmount=0, note } = data||{};
     const code = data?.receiptCode || genCode('PX', GM_state.exports);
@@ -25,7 +25,7 @@ window.GM_receipts = (function(){
     GM_state.exports.push(rec); addHistoryForReceipt(rec); await persist();
     // Cloud sync (upsert export)
     try { await cloudUpsertExport(rec); } catch(_) {}
-    window.GM_realtime?.pushAll();
+    try { await window.GM_realtime?.pushAll(); } catch(e) { console.error('[receipts] pushAll failed:', e); }
     return rec;
   }
   function genCode(prefix, arr){ let max=0; arr.forEach(r=>{ const m=/^(?:PN|PX)(\d+)$/.exec(r.receiptCode); if(m) max=Math.max(max, parseInt(m[1],10)); }); return prefix+String(max+1).padStart(3,'0'); }
@@ -58,7 +58,7 @@ window.GM_receipts = (function(){
     await persist();
     // Cloud sync (upsert to proper collection)
     try { if (isImport) await cloudUpsertImport(receipt); else await cloudUpsertExport(receipt); } catch(_) {}
-    window.GM_realtime?.pushAll();
+    try { await window.GM_realtime?.pushAll(); } catch(e) { console.error('[receipts] pushAll failed:', e); }
     return receipt;
   }
   
@@ -105,7 +105,7 @@ window.GM_receipts = (function(){
     await persist();
     // Cloud sync (delete from proper collection)
     try { if (receiptType === 'export') await cloudDeleteExport(receiptId); else if (receiptType === 'import') await cloudDeleteImport(receiptId); } catch(_) {}
-    window.GM_realtime?.pushAll();
+    try { await window.GM_realtime?.pushAll(); } catch(e) { console.error('[receipts] pushAll failed:', e); }
     return receipt;
   }
   
@@ -134,7 +134,7 @@ window.GM_receipts = (function(){
     await persist();
     // Cloud sync (upsert to proper collection)
     try { if (receiptData.type === 'export') await cloudUpsertExport(receiptData); else if (receiptData.type === 'import') await cloudUpsertImport(receiptData); } catch(_) {}
-    window.GM_realtime?.pushAll();
+    try { await window.GM_realtime?.pushAll(); } catch(e) { console.error('[receipts] pushAll failed:', e); }
     return receiptData;
   }
   

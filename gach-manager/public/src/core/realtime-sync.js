@@ -16,8 +16,8 @@
     let debounceTimer = null;
     let lastRemoteVersion = 0;
 
-    async function pushAll(){
-      if(importing) return;
+    async function pushAll(force = false){
+      if(importing && !force) return;
       try{
         const snapshot = GM_storage.exportAll();
         const nextVer = (lastRemoteVersion || 0) + 1;
@@ -28,7 +28,7 @@
           lastWriterId: clientId
         }, { merge: true });
         lastRemoteVersion = nextVer;
-        console.log('[RealtimeSync] Push version', nextVer);
+        console.log('[RealtimeSync] Push version', nextVer, force ? '(forced)' : '');
       }catch(e){ console.error('[RealtimeSync] Push fail', e); }
     }
 
@@ -51,6 +51,7 @@
         GM_storage.importAll(data.data || {});
         console.log('[RealtimeSync] Pull version', ver);
       } finally { importing = false; }
+      // Notify UI to refresh current page if needed
       try { window.dispatchEvent(new CustomEvent('gm:data-updated', { detail: { source: 'cloud', version: ver } })); } catch {}
     }, err=> console.error('[RealtimeSync] onSnapshot error', err));
 
