@@ -656,13 +656,12 @@
 
     try {
       const processingHTML = `
-        <div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">
-          <div style="background:white;padding:20px;border-radius:8px;text-align:center;">
-            <div style="margin-bottom:15px;font-size:18px;">🔄 Đang xử lý file Excel...</div>
+        <div class="gm-processing-overlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">
+          <div style="background:white;padding:20px;border-radius:8px;text-align:center;min-width:320px;">
+            <div style="margin-bottom:15px;font-size:18px;color:#111827;">🔄 Đang xử lý file Excel...</div>
             <div class="loading-spinner"></div>
           </div>
-        </div>
-        `;
+        </div>`;
         document.body.insertAdjacentHTML('beforeend', processingHTML);
 
         const arrayBuffer = await file.arrayBuffer();
@@ -688,7 +687,7 @@
         const dataRows = jsonData.slice(1).filter(row => row.length > 0);
 
         if (dataRows.length === 0) {
-          document.querySelector('.loading-spinner')?.parentElement?.parentElement?.remove();
+          document.querySelector('.gm-processing-overlay')?.remove();
           errorMessageDiv.textContent = '⚠️ Không tìm thấy dữ liệu trong file Excel';
           errorMessageDiv.style.display = 'block';
           return;
@@ -762,7 +761,7 @@
           importSuccess = await submitImportData(importData);
         }
 
-  document.querySelector('.loading-spinner')?.parentElement?.parentElement?.remove();
+  document.querySelector('.gm-processing-overlay')?.remove();
 
   // Đếm kết quả
   const successCount = results.filter(r=>r.status==='success').length;
@@ -853,7 +852,7 @@
         }
 
       } catch (error) {
-        document.querySelector('.loading-spinner')?.parentElement?.parentElement?.remove();
+        document.querySelector('.gm-processing-overlay')?.remove();
         errorMessageDiv.textContent = '❌ Lỗi xử lý file Excel: ' + error.message;
         errorMessageDiv.style.display = 'block';
       }
