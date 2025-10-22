@@ -15,25 +15,67 @@
     let importing = false;
     let debounceTimer = null;
     let lastRemoteVersion = 0;
+    let pushing = false;
+    const pushQueue = [];
 
-    async function pushAll(force = false){
+    function estimateSize(obj){
+      try { return new Blob([JSON.stringify(obj)]).size; } catch { return 0; }
+    }
+
+    async function pushAllInternal(force=false, attempt=1){
       if(importing && !force) return;
+      if(pushing){ pushQueue.push({ force }); return; }
+
+      const snapshot = GM_storage.exportAll();
+      const docSize = estimateSize(snapshot);
+      if (docSize > 900_000) {
+        console.warn('[RealtimeSync] Snapshot size near 1MB limit ~', docSize, 'bytes');
+      }
+
+      pushing = true;
       try{
-        const snapshot = GM_storage.exportAll();
-        const nextVer = (lastRemoteVersion || 0) + 1;
-        await fb.setDoc(snapRef, {
-          data: snapshot,
-          version: nextVer,
-          updatedAt: fb.serverTimestamp(),
-          lastWriterId: clientId
-        }, { merge: true });
-        lastRemoteVersion = nextVer;
-        console.log('[RealtimeSync] Push version', nextVer, force ? '(forced)' : '');
-      }catch(e){ console.error('[RealtimeSync] Push fail', e); }
+        await fb.runTransaction(fb.db, async (tx)=>{
+          const cur = await tx.get(snapRef);
+          const curVer = cur.exists() ? (cur.data().version || 0) : 0;
+          const nextVer = curVer + 1;
+          tx.set(snapRef, {
+            data: snapshot,
+            version: nextVer,
+            updatedAt: fb.serverTimestamp(),
+            lastWriterId: clientId
+          }, { merge: true });
+          lastRemoteVersion = nextVer;
+        });
+        console.log('[RealtimeSync] Push version (tx)', lastRemoteVersion, force ? '(forced)' : '');
+      }catch(e){
+        const code = e?.code || e?.message || String(e);
+        console.warn('[RealtimeSync] Push fail', code, 'attempt', attempt);
+        if (attempt < 3 && /aborted|deadline|unavailable|failed-precondition/i.test(code)){
+          await new Promise(r=>setTimeout(r, 300 + attempt*200));
+          await pushAllInternal(force, attempt+1);
+        } else {
+          if (!navigator.onLine || /unavailable|network/i.test(code)){
+            pushQueue.push({ force });
+          }
+        }
+      } finally {
+        pushing = false;
+        const job = pushQueue.shift();
+        if (job){
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(()=> pushAllInternal(job.force), 300);
+        }
+      }
+    }
+
+    async function pushAll(force=false){
+      clearTimeout(debounceTimer);
+      if (force) return pushAllInternal(true);
+      debounceTimer = setTimeout(()=> pushAllInternal(false), 1200);
     }
 
     // Optional manual trigger
-    window.GM_realtime = { pushAll };
+    window.GM_realtime = { pushAll, pushNow: ()=>pushAllInternal(true) };
 
     // Initialize version
     fb.getDoc(snapRef).then(s=>{ if(s.exists()) lastRemoteVersion = s.data()?.version || 0; }).catch(()=>{});
@@ -42,7 +84,7 @@
     fb.onSnapshot(snapRef, (snap)=>{
       if(!snap.exists()) return;
       const data = snap.data();
-      if(data.lastWriterId === clientId) return;
+      if(data.lastWriterId === clientId){ lastRemoteVersion = Math.max(lastRemoteVersion, data.version||0); return; }
       const ver = data.version || 0;
       if(ver <= (lastRemoteVersion || 0)) return;
       lastRemoteVersion = ver;
@@ -60,10 +102,7 @@
       const _write = GM_storage.write;
       GM_storage.write = async function(key, data){
         const r = await _write.call(GM_storage, key, data);
-        if(!importing){
-          clearTimeout(debounceTimer);
-          debounceTimer = setTimeout(pushAll, 400);
-        }
+        if(!importing){ await pushAll(false); }
         return r;
       };
       GM_storage.__rt_wrapped_write = true;
@@ -74,10 +113,7 @@
       const _importAll = GM_storage.importAll;
       GM_storage.importAll = async function(obj){
         const r = await _importAll.call(GM_storage, obj);
-        if(!importing){
-          clearTimeout(debounceTimer);
-          debounceTimer = setTimeout(pushAll, 400);
-        }
+        if(!importing){ await pushAll(false); }
         return r;
       };
       GM_storage.__rt_wrapped_importAll = true;
@@ -88,14 +124,15 @@
       const _clear = GM_storage.clear;
       GM_storage.clear = async function(){
         const r = await _clear.call(GM_storage);
-        if(!importing){
-          clearTimeout(debounceTimer);
-          debounceTimer = setTimeout(pushAll, 200);
-        }
+        // clear -> force push immediately
+        await pushAll(true);
         return r;
       };
       GM_storage.__rt_wrapped_clear = true;
     }
+
+    // Flush queued pushes when back online
+    window.addEventListener('online', ()=>{ if(pushQueue.length){ console.log('[RealtimeSync] Online: flushing queue'); pushAll(true); } });
 
     console.log('[RealtimeSync] Attached listeners');
   }

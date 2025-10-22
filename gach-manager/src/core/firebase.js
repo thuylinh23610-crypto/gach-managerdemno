@@ -15,7 +15,8 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
-  serverTimestamp
+  serverTimestamp,
+  runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 // Your web app's Firebase configuration
@@ -56,7 +57,8 @@ export {
   setDoc,
   updateDoc,
   deleteDoc,
-  serverTimestamp
+  serverTimestamp,
+  runTransaction
 };
 
 // Global fallback so non-module scripts can access if needed
@@ -74,7 +76,8 @@ window.FB = {
   setDoc,
   updateDoc,
   deleteDoc,
-  serverTimestamp
+  serverTimestamp,
+  runTransaction
 };
 
 // Provide a GM_fb facade for snapshot-based realtime
@@ -86,7 +89,8 @@ Object.assign(window.GM_fb, {
   getDoc,
   setDoc,
   onSnapshot,
-  serverTimestamp
+  serverTimestamp,
+  runTransaction
 });
 
 // Dispatch a ready event so non-module scripts can wait for Firebase
