@@ -785,28 +785,39 @@
           importSuccess = await submitImportData(importData);
         }
 
-  document.querySelector('.gm-processing-overlay')?.remove();
+        // LUÔN LUÔN remove overlay trước
+        document.querySelector('.gm-processing-overlay')?.remove();
 
-  // Đếm kết quả
-  const successCount = results.filter(r=>r.status==='success').length;
-  const failCount = results.filter(r=>r.status==='fail').length;
+        // Đếm kết quả
+        const successCount = results.filter(r=>r.status==='success').length;
+        const failCount = results.filter(r=>r.status==='fail').length;
 
-  // Nếu thành công: đóng modal và thông báo rõ ràng, không giữ bảng kết quả
-  if (importSuccess && successCount > 0) {
-    // Clear error message div
-    if (errorMessageDiv) {
-      errorMessageDiv.style.display = 'none';
-      errorMessageDiv.innerHTML = '';
-    }
-    // Close modal immediately
-    GM_ui.closeModal();
-    // Show beautiful success toast
-    GM_ui.toast(`✅ Nhập kho ${successCount} sản phẩm thành công!`, { type: 'success', timeout: 4000 });
-    if (failCount > 0) GM_ui.toast(`⚠️ Bỏ qua ${failCount} dòng lỗi`, { type: 'warning', timeout: 4000 });
-    // Soft refresh imports page
-    setTimeout(() => GM_router.go('imports'), 300);
-    return;
-  }
+        console.log('[BulkImport] Import done:', { importSuccess, successCount, failCount, products: products.length });
+
+        // Nếu thành công: đóng modal và thông báo rõ ràng, không giữ bảng kết quả
+        if (importSuccess && successCount > 0) {
+          // Clear error message div
+          if (errorMessageDiv) {
+            errorMessageDiv.style.display = 'none';
+            errorMessageDiv.innerHTML = '';
+          }
+          
+          console.log('[BulkImport] Closing modal and showing toast...');
+          
+          // Close modal immediately
+          GM_ui.closeModal();
+          
+          // Show beautiful success toast
+          GM_ui.toast(`✅ Nhập kho ${successCount} sản phẩm thành công!`, { type: 'success', timeout: 4000 });
+          if (failCount > 0) GM_ui.toast(`⚠️ Bỏ qua ${failCount} dòng lỗi`, { type: 'warning', timeout: 4000 });
+          
+          // Soft refresh imports page
+          setTimeout(() => {
+            console.log('[BulkImport] Refreshing page...');
+            GM_router.go('imports');
+          }, 300);
+          return;
+        }
 
   // Nếu không thành công: hiển thị chi tiết để người dùng xem và sửa
   let html = `
