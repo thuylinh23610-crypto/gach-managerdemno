@@ -768,11 +768,19 @@
   const failCount = results.filter(r=>r.status==='fail').length;
 
   // Nếu thành công: đóng modal và thông báo rõ ràng, không giữ bảng kết quả
-  if (importSuccess) {
+  if (importSuccess && successCount > 0) {
+    // Clear error message div
+    if (errorMessageDiv) {
+      errorMessageDiv.style.display = 'none';
+      errorMessageDiv.innerHTML = '';
+    }
+    // Close modal immediately
     GM_ui.closeModal();
-    GM_ui.toast(`✅ Đã nhập kho hàng loạt: ${successCount} dòng hợp lệ (mã ${receiptNumber})`, { type:'success', timeout: 5000 });
-    if (failCount > 0) GM_ui.toast(`❌ ${failCount} dòng lỗi (bỏ qua)`, { type:'error', timeout: 5000 });
-    setTimeout(()=>{ GM_router.go('imports'); }, 600);
+    // Show beautiful success toast
+    GM_ui.toast(`✅ Nhập kho ${successCount} sản phẩm thành công!`, { type: 'success', timeout: 4000 });
+    if (failCount > 0) GM_ui.toast(`⚠️ Bỏ qua ${failCount} dòng lỗi`, { type: 'warning', timeout: 4000 });
+    // Soft refresh imports page
+    setTimeout(() => GM_router.go('imports'), 300);
     return;
   }
 

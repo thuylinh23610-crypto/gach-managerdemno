@@ -804,10 +804,18 @@
 
       // Nếu có thành công: đóng modal, thông báo và refresh
       if (successCount > 0) {
+        // Clear message div to prevent old content showing
+        if (messageDiv) {
+          messageDiv.style.display = 'none';
+          messageDiv.innerHTML = '';
+        }
+        // Close modal immediately
         GM_ui.closeModal();
-        GM_ui.toast(`✅ Import sản phẩm thành công: ${successCount} dòng`, { type: 'success', timeout: 5000 });
-        if (errorCount > 0) GM_ui.toast(`❌ Có ${errorCount} dòng lỗi (bỏ qua)`, { type: 'error', timeout: 6000 });
-        GM_router.go('products');
+        // Show beautiful success toast
+        GM_ui.toast(`✅ Import ${successCount} sản phẩm thành công!`, { type: 'success', timeout: 4000 });
+        if (errorCount > 0) GM_ui.toast(`⚠️ Bỏ qua ${errorCount} dòng lỗi`, { type: 'warning', timeout: 4000 });
+        // Soft refresh products page
+        setTimeout(() => GM_router.go('products'), 300);
         return;
       }
 

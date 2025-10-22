@@ -193,39 +193,69 @@
   z-index: 12000; /* above any modal/processing overlay */
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   pointer-events: none;
 }
 .toast { 
   position: relative; 
-  background: #1f2937; 
+  background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
   color: #fff; 
-  padding: 12px 14px; 
-  border-radius: 12px; 
-  font-size: 14px; 
+  padding: 16px 20px; 
+  border-radius: 14px; 
+  font-size: 15px; 
   font-weight: 600;
-  box-shadow: 0 10px 20px rgba(0,0,0,.15); 
-  animation: fadeIn .22s ease; 
-  border: 1px solid rgba(255,255,255,.06);
-  min-width: 280px;
-  max-width: 520px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.2), 0 4px 12px rgba(0,0,0,.15); 
+  animation: slideInRight .3s cubic-bezier(0.34, 1.56, 0.64, 1); 
+  border: 1px solid rgba(255,255,255,.1);
+  min-width: 300px;
+  max-width: 480px;
   pointer-events: auto;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
 }
-.toast .toast-inner{ display:flex; align-items:center; gap:10px; }
-.toast .toast-icon{ font-size:18px; line-height:1; }
-.toast .toast-text{ line-height:1.35; }
-.toast.success{ background:#065f46; }
-.toast.error{ background:#7f1d1d; }
-.toast.warning{ background:#78350f; }
-.toast.info{ background:#1f2937; }
-@keyframes fadeIn { 
+.toast:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(0,0,0,.25), 0 6px 16px rgba(0,0,0,.18);
+}
+.toast .toast-inner{ 
+  display: flex; 
+  align-items: center; 
+  gap: 12px; 
+}
+.toast .toast-icon{ 
+  font-size: 24px; 
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.2));
+}
+.toast .toast-text{ 
+  line-height: 1.4;
+  flex: 1;
+  letter-spacing: 0.3px;
+}
+.toast.success{ 
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-color: rgba(255,255,255,.2);
+}
+.toast.error{ 
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border-color: rgba(255,255,255,.2);
+}
+.toast.warning{ 
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border-color: rgba(255,255,255,.2);
+}
+.toast.info{ 
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-color: rgba(255,255,255,.2);
+}
+@keyframes slideInRight { 
   from { 
     opacity: 0; 
-    transform: translateY(-8px);
+    transform: translateX(100px) scale(0.8);
   } 
   to { 
     opacity: 1; 
-    transform: translateY(0);
+    transform: translateX(0) scale(1);
   } 
 }
 .page-head { 
