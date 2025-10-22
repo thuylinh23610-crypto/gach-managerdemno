@@ -67,9 +67,15 @@ window.FB = {
   collection,
   addDoc,
   getDocs,
+  onSnapshot,
   doc,
   setDoc,
   updateDoc,
   deleteDoc,
   serverTimestamp
 };
+
+// Dispatch a ready event so non-module scripts can wait for Firebase
+try {
+  window.dispatchEvent(new CustomEvent('gm:firebase-ready', { detail: { app, db } }));
+} catch (_) { /* ignore */ }

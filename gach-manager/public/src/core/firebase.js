@@ -74,3 +74,8 @@ window.FB = {
   deleteDoc,
   serverTimestamp
 };
+
+// Dispatch a ready event so non-module scripts can wait for Firebase
+try {
+  window.dispatchEvent(new CustomEvent('gm:firebase-ready', { detail: { app, db } }));
+} catch (_) { /* ignore */ }
