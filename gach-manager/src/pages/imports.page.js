@@ -663,10 +663,14 @@
 
     try {
       const processingHTML = `
-        <div class="gm-processing-overlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">
-          <div style="background:white;padding:20px;border-radius:8px;text-align:center;min-width:320px;">
-            <div style="margin-bottom:15px;font-size:18px;color:#111827;">🔄 Đang xử lý file Excel...</div>
-            <div class="loading-spinner"></div>
+        <div class="gm-processing-overlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+          <div style="background:white;padding:24px 32px;border-radius:12px;text-align:center;min-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <div class="loading-spinner" style="margin:0 auto 16px;"></div>
+            <div style="margin-bottom:8px;font-size:18px;color:#111827;font-weight:600;">🔄 Đang xử lý file Excel...</div>
+            <div style="margin-top:16px;background:#f3f4f6;border-radius:8px;height:8px;overflow:hidden;">
+              <div id="gm-progress-bar" style="background:linear-gradient(90deg,#10b981,#059669);height:100%;width:0%;transition:width 0.3s;"></div>
+            </div>
+            <div id="gm-progress-text" style="margin-top:8px;font-size:13px;color:#6b7280;font-weight:500;">0/0</div>
           </div>
         </div>`;
         document.body.insertAdjacentHTML('beforeend', processingHTML);
@@ -706,6 +710,10 @@
 
         let products = [];
         let results = [];
+        const total = dataRows.length;
+        const bar = document.getElementById('gm-progress-bar');
+        const txt = document.getElementById('gm-progress-text');
+        if (txt) txt.textContent = `0/${total}`;
 
         for (let i = 0; i < dataRows.length; i++) {
           const row = dataRows[i];
@@ -736,6 +744,10 @@
 
           if (error) {
             results.push({ productCode, quantity, unit, note, status: 'fail', error });
+            // Update progress
+            const processed = i + 1;
+            if (bar) bar.style.width = `${Math.round(processed/total*100)}%`;
+            if (txt) txt.textContent = `${processed}/${total}`;
             continue;
           }
 
@@ -752,6 +764,11 @@
 
           products.push({ productCode, quantity, unit, note });
           results.push({ productCode, quantity, unit, note, status: 'success' });
+          
+          // Update progress
+          const processed = i + 1;
+          if (bar) bar.style.width = `${Math.round(processed/total*100)}%`;
+          if (txt) txt.textContent = `${processed}/${total}`;
         }
 
         // Nếu có ít nhất 1 sản phẩm hợp lệ thì tạo phiếu nhập
