@@ -159,3 +159,140 @@
 @media (prefers-reduced-motion: reduce) {
   .sidebar { animation: none; background-size: auto; }
 }
+
+/* ==================== MOBILE RESPONSIVE ==================== */
+
+/* Hamburger menu (hidden on desktop) */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  margin-right: 12px;
+  z-index: 1001;
+}
+
+.hamburger span {
+  display: block;
+  width: 25px;
+  height: 3px;
+  background: #333;
+  border-radius: 2px;
+  transition: 0.3s;
+}
+
+/* Sidebar overlay */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.active {
+  display: block;
+  opacity: 1;
+}
+
+/* Tablet: 768px - 1024px */
+@media (max-width: 1024px) {
+  .app {
+    padding-left: 200px;
+  }
+
+  .sidebar {
+    width: 200px;
+  }
+}
+
+/* Mobile: <= 768px */
+@media (max-width: 768px) {
+  /* Show hamburger */
+  .hamburger {
+    display: flex;
+  }
+
+  /* Remove left padding from app */
+  .app {
+    padding-left: 0;
+  }
+
+  /* Hide sidebar by default, show as overlay when open */
+  .sidebar {
+    position: fixed;
+    left: -100%;
+    top: 0;
+    width: 280px;
+    height: 100vh;
+    z-index: 1000;
+    transition: left 0.3s ease;
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.2);
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  /* Main takes full width */
+  .main {
+    width: 100%;
+  }
+
+  /* Show topbar on mobile */
+  .topbar {
+    display: flex !important;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--card-bg);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .topbar h1 {
+    font-size: 18px;
+    margin: 0;
+    flex: 1;
+  }
+
+  .topbar .actions {
+    gap: 8px;
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  /* Page content */
+  .page-root {
+    padding: 16px 12px;
+  }
+
+  /* Storage widget smaller */
+  .storage-widget {
+    font-size: 11px;
+    padding: 8px 12px;
+  }
+}
+
+/* Small mobile: <= 480px */
+@media (max-width: 480px) {
+  .sidebar {
+    width: 85%;
+    max-width: 280px;
+  }
+
+  .topbar h1 {
+    font-size: 16px;
+  }
+
+  .page-root {
+    padding: 12px 8px;
+  }
+}

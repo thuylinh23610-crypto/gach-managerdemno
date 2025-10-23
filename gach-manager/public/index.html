@@ -2,20 +2,23 @@
 <html lang="vi">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Gạch Manager</title>
-  <link rel="stylesheet" href="assets/css/base.css?v=20251022" />
-  <link rel="stylesheet" href="assets/css/layout.css?v=20251022" />
-  <link rel="stylesheet" href="assets/css/components.css?v=20251022" />
-  <link rel="stylesheet" href="assets/css/pages.css?v=20251022" />
+  <link rel="stylesheet" href="assets/css/base.css?v=20251023" />
+  <link rel="stylesheet" href="assets/css/layout.css?v=20251023" />
+  <link rel="stylesheet" href="assets/css/components.css?v=20251023" />
+  <link rel="stylesheet" href="assets/css/pages.css?v=20251023" />
 </head>
 <body>
   <!-- Portals -->
   <div id="modal-root"></div>
   <div id="toast-root"></div>
 
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
   <div class="app">
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div class="logo">🏠 <span>Gạch Manager</span></div>
       <nav id="gm-menu" class="menu"></nav>
       <div id="storage-widget" class="storage-widget"></div>
@@ -24,6 +27,11 @@
 
     <main class="main">
       <header class="topbar">
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
         <h1 id="page-title">Loading...</h1>
         <div class="actions" id="global-actions"></div>
       </header>
@@ -33,39 +41,73 @@
 
   <!-- Core -->
   <!-- Firebase (ESM) -->
-  <script type="module" src="src/core/firebase.js?v=20251022"></script>
+  <script type="module" src="src/core/firebase.js?v=20251023"></script>
   <!-- Core dependencies (must be before realtime) -->
-  <script src="src/core/constants.js?v=20251022"></script>
-  <script src="src/core/utils.js?v=20251022"></script>
-  <script src="src/core/storage.js?v=20251022"></script>
-  <script src="src/core/state.js?v=20251022"></script>
-  <script src="src/core/ui.js?v=20251022"></script>
-  <script src="src/core/router.js?v=20251022"></script>
+  <script src="src/core/constants.js?v=20251023"></script>
+  <script src="src/core/utils.js?v=20251023"></script>
+  <script src="src/core/storage.js?v=20251023"></script>
+  <script src="src/core/state.js?v=20251023"></script>
+  <script src="src/core/ui.js?v=20251023"></script>
+  <script src="src/core/router.js?v=20251023"></script>
   <!-- Status + Realtime AFTER state/storage are ready -->
-  <script src="src/core/sync-status.js?v=20251022"></script>
-  <script src="src/core/realtime-sync.js?v=20251022"></script>
-  <script src="src/core/auto-refresh.js?v=20251022"></script>
+  <script src="src/core/sync-status.js?v=20251023"></script>
+  <script src="src/core/realtime-sync.js?v=20251023"></script>
+  <script src="src/core/auto-refresh.js?v=20251023"></script>
+
+  <!-- Mobile menu handler -->
+  <script>
+    (function() {
+      const hamburger = document.getElementById('hamburger');
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+
+      function toggleMenu() {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+        document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+      }
+
+      function closeMenu() {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+
+      hamburger.addEventListener('click', toggleMenu);
+      overlay.addEventListener('click', closeMenu);
+
+      sidebar.addEventListener('click', (e) => {
+        if (e.target.tagName === 'A') {
+          setTimeout(closeMenu, 150);
+        }
+      });
+
+      window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) closeMenu();
+      });
+    })();
+  </script>
 
   <!-- Services -->
-  <script src="src/services/products.service.js?v=20251022"></script>
-  <script src="src/services/receipts.service.js?v=20251022"></script>
-  <script src="src/services/excel.service.js?v=20251022"></script>
-  <script src="src/services/customers.service.js?v=20251022"></script>
-  <script src="src/services/history.service.js?v=20251022"></script>
-  <script src="src/services/stock.service.js?v=20251022"></script>
-  <script src="src/services/trash.service.js?v=20251022"></script>
+  <script src="src/services/products.service.js?v=20251023"></script>
+  <script src="src/services/receipts.service.js?v=20251023"></script>
+  <script src="src/services/excel.service.js?v=20251023"></script>
+  <script src="src/services/customers.service.js?v=20251023"></script>
+  <script src="src/services/history.service.js?v=20251023"></script>
+  <script src="src/services/stock.service.js?v=20251023"></script>
+  <script src="src/services/trash.service.js?v=20251023"></script>
 
   <!-- Pages (register routes) -->
-  <script src="src/pages/products.page.js?v=20251022"></script>
-  <script src="src/pages/imports.page.js?v=20251022"></script>
-  <script src="src/pages/exports.page.js?v=20251022"></script>
-  <script src="src/pages/stock.page.js?v=20251022"></script>
-  <script src="src/pages/customers.page.js?v=20251022"></script>
-  <script src="src/pages/history.page.js?v=20251022"></script>
-  <script src="src/pages/trash.page.js?v=20251022"></script>
-  <script src="src/pages/settings.page.js?v=20251022"></script>
+  <script src="src/pages/products.page.js?v=20251023"></script>
+  <script src="src/pages/imports.page.js?v=20251023"></script>
+  <script src="src/pages/exports.page.js?v=20251023"></script>
+  <script src="src/pages/stock.page.js?v=20251023"></script>
+  <script src="src/pages/customers.page.js?v=20251023"></script>
+  <script src="src/pages/history.page.js?v=20251023"></script>
+  <script src="src/pages/trash.page.js?v=20251023"></script>
+  <script src="src/pages/settings.page.js?v=20251023"></script>
 
   <!-- Bootstrap (start app) -->
-  <script src="src/core/bootstrap.js?v=20251022"></script>
+  <script src="src/core/bootstrap.js?v=20251023"></script>
 </body>
 </html>
